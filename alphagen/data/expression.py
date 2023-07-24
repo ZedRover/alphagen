@@ -68,7 +68,6 @@ class Expression(metaclass=ABCMeta):
 class Feature(Expression):
     def __init__(self, feature: FeatureType) -> None:
         self._feature = feature
-
     def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
         assert period.step == 1 or period.step is None
         if (period.start < -data.max_backtrack_days or
@@ -76,7 +75,8 @@ class Feature(Expression):
             raise OutOfDataRangeError()
         start = period.start + data.max_backtrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
-        return data.data[start:stop, int(self._feature), :]
+        n_feat = int(self._feature)   #TODO: Modified to mask vwap
+        return data.data[start:stop, n_feat if n_feat<5 else 0, :]
 
     def __str__(self) -> str: return '$' + self._feature.name.lower()
 

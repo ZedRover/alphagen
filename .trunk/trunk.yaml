@@ -1,0 +1,19 @@
+version: 0.1
+cli:
+  version: 1.12.3
+plugins:
+  sources:
+    - id: trunk
+      ref: v0.0.22
+      uri: https://github.com/trunk-io/plugins
+actions:
+  disabled:
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
+  enabled:
+    - trunk-upgrade-available
+
+lint:
+  enabled:
+    - prettier@3.0.0
