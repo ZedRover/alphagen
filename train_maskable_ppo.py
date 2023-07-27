@@ -180,4 +180,4 @@ if __name__ == '__main__':
             for instruments in ["csi300"]:
                 # main(seed=seed, instruments=instruments, pool_capacity=capacity, steps=steps[capacity])
                 pass
-    main(seed=1, instruments='csi300', pool_capacity=10, steps=250_000)
+    main(seed=1, instruments='csi300', pool_capacity=100, steps=250_000)

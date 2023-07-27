@@ -14,6 +14,8 @@ class FeatureType(IntEnum):
     VWAP = 5
 
 
+    
+    
 class StockData:
     _qlib_initialized: bool = False
 

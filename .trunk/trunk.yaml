@@ -16,4 +16,5 @@ actions:
 
 lint:
   enabled:
+    - ruff@0.0.280
     - prettier@3.0.0
