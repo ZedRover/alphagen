@@ -1,17 +1,27 @@
 from enum import IntEnum
+from time import strftime
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import SharedArray as sa
 import torch
-from feature_list import FEATURES
+from .feature_list import FEATURES
 from enum import Enum
+import pandas_market_calendars as mcal
+from datetime import datetime
 
 N_PROD = 6000
-MULTI_TI = 16
+MULTI_TI = 1
 
 FeatureType = Enum("FeatureType", tuple(FEATURES))
+
+
+def fetch_valid_td(start, end):
+    cld = mcal.get_calendar("XSHG")
+    early = cld.schedule(start_date=str(start), end_date=str(end))
+    days = early.index.strftime("%Y%m%d").astype(int)
+    return days[0], days[-1]
 
 
 class StockData:
@@ -29,21 +39,20 @@ class StockData:
         self.max_future_days = max_future_days
         self._features = features if features is not None else list(FeatureType)
         self.device = device
-        self._start_time = int(start_time)
-        self._end_time = int(end_time)
+        self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
         self.data, self._dates, self._stock_ids = self._get_data()
 
     def _get_data(self) -> Tuple[torch.Tensor, pd.Index, pd.Index]:
         features = ["$" + f.name.lower() for f in self._features]
         dates = np.load("/home/public2/share_yw/data/basic_info/Dates.npy")
         stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
-        start_idx = np.where(dates == self._start_time)[0][0]
-        end_idx = np.where(dates == self._end_time)[0][0]
+        self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
+        self.end_idx = np.where(dates == self._end_time)[0][0] * MULTI_TI
         data = []
         for feature in features:
-            feature_data = sa.attach(feature[1:])[start_idx:end_idx, ...].reshape(
-                -1, N_PROD
-            )
+            feature_data = sa.attach(feature[1:]).reshape(-1, N_PROD)[
+                self.start_idx : self.end_idx, ...
+            ]
             data.append(feature_data)
         data = np.stack(data, axis=1)
         data = torch.from_numpy(data).to(self.device)
