@@ -12,9 +12,13 @@ class QLibStockDataCalculator(AlphaCalculator):
     def __init__(self, data: StockData, target: Expression):
         self.data = data
         self.target_value = normalize_by_day(target.evaluate(self.data))
+        print(f"data.data.shape:{self.data.data.shape}")
+        print(f"target_value.shape:{self.target_value.shape}")
 
     def _calc_alpha(self, expr: Expression) -> Tensor:
-        return normalize_by_day(expr.evaluate(self.data))
+        alpha = normalize_by_day(expr.evaluate(self.data))
+        print(f"alpha.shape:{alpha.shape}")
+        return alpha
 
     def _calc_IC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_pearsonr(value1, value2).mean().item()
@@ -22,9 +26,13 @@ class QLibStockDataCalculator(AlphaCalculator):
     def _calc_rIC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_spearmanr(value1, value2).mean().item()
 
-    def _make_ensemble_alpha(self, exprs: List[Expression], weights: List[float]) -> Tensor:
+    def _make_ensemble_alpha(
+        self, exprs: List[Expression], weights: List[float]
+    ) -> Tensor:
         n = len(exprs)
-        factors: List[Tensor] = [self._calc_alpha(exprs[i]) * weights[i] for i in range(n)]
+        factors: List[Tensor] = [
+            self._calc_alpha(exprs[i]) * weights[i] for i in range(n)
+        ]
         return sum(factors)  # type: ignore
 
     def calc_single_IC_ret(self, expr: Expression) -> float:

@@ -9,12 +9,11 @@ import torch
 from .feature_list import FEATURES
 from enum import Enum
 import pandas_market_calendars as mcal
-from datetime import datetime
 
 N_PROD = 6000
-MULTI_TI = 1
+MULTI_TI = 16
 
-FeatureType = Enum("FeatureType", tuple(FEATURES))
+FeatureType = Enum("FeatureType", {feature: i for i, feature in enumerate(FEATURES)})
 
 
 def fetch_valid_td(start, end):

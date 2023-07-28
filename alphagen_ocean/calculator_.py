@@ -5,24 +5,26 @@ from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
 from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data_ import *
+from alphagen_ocean.stock_data_ import StockData, N_PROD
 import numpy as np
 
 
 class QLibStockDataCalculator(AlphaCalculator):
     def __init__(self, data: StockData):
         self.data = data
+        real_start_idx = data.start_idx + data.max_backtrack_days
+        real_end_idx = data.end_idx - data.max_future_days
+
         self.ret1d = np.load(
             "/home/public2/share_yw/data/basic_info/RET1D.npy"
-        ).reshape(-1, N_PROD)[data.start_idx : data.end_idx]
+        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
         self.ret2d = np.load(
             "/home/public2/share_yw/data/basic_info/RET2D.npy"
-        ).reshape(-1, N_PROD)[data.start_idx : data.end_idx]
+        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
         self.ret5d = np.load(
             "/home/public2/share_yw/data/basic_info/RET2D.npy"
-        ).reshape(-1, N_PROD)[data.start_idx : data.end_idx]
-        self.ret1d = torch.from_numpy(self.ret1d)
-        print(f"ret1d shape:{self.ret1d.shape}")
+        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
+        self.ret1d = torch.from_numpy(self.ret1d).to(data.device)
 
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))

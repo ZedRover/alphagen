@@ -106,22 +106,22 @@ def main(
 ):
     reseed_everything(seed)
 
-    device = torch.device("cuda:1")
+    device_rl = torch.device("cuda:1")
+    device = torch.device("cpu")
 
-    # You can re-implement AlphaCalculator instead of using QLibStockDataCalculator.
     data_train = StockData(
         start_time=20190103,
-        end_time=20190201,
+        end_time=20190301,
         device=device,
     )
     data_valid = StockData(
-        start_time=20190201,
-        end_time=20190215,
+        start_time=20190301,
+        end_time=20190315,
         device=device,
     )
     data_test = StockData(
-        start_time=20190215,
-        end_time=20190301,
+        start_time=20190315,
+        end_time=20190401,
         device=device,
     )
     calculator_train = QLibStockDataCalculator(data_train)
@@ -134,7 +134,7 @@ def main(
         ic_lower_bound=None,
         l1_alpha=5e-3,
     )
-    env = AlphaEnv(pool=pool, device=device, print_expr=True)
+    env = AlphaEnv(pool=pool, device=device_rl, print_expr=True)
 
     name_prefix = f"kdd_{instruments}_{pool_capacity}_{seed}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -159,7 +159,7 @@ def main(
                 n_layers=2,
                 d_model=128,
                 dropout=0.1,
-                device=device,
+                device=device_rl,
             ),
         ),
         gamma=1.0,
@@ -177,10 +177,10 @@ def main(
 
 
 if __name__ == "__main__":
-    steps = {10: 250_000, 20: 300_000, 50: 350_000, 100: 400_000}
-    for capacity in [10, 20, 30, 50]:
-        for seed in range(5):
-            for instruments in ["csi300"]:
-                # main(seed=seed, instruments=instruments, pool_capacity=capacity, steps=steps[capacity])
-                pass
-    main(seed=1, instruments="csi300", pool_capacity=100, steps=250_000)
+    # steps = {10: 250_000, 20: 300_000, 50: 350_000, 100: 400_000}
+    # for capacity in [10, 20, 30, 50]:
+    #     for seed in range(5):
+    #         for instruments in ["csi300"]:
+    #             # main(seed=seed, instruments=instruments, pool_capacity=capacity, steps=steps[capacity])
+    #             pass
+    main(seed=1, instruments="csi300", pool_capacity=10, steps=250_000)
