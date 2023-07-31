@@ -25,6 +25,7 @@ class QLibStockDataCalculator(AlphaCalculator):
             "/home/public2/share_yw/data/basic_info/RET2D.npy"
         ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
         self.ret1d = torch.from_numpy(self.ret1d).to(data.device)
+        self.target = self.ret1d
 
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))
@@ -46,7 +47,7 @@ class QLibStockDataCalculator(AlphaCalculator):
 
     def calc_single_IC_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
-        return self._calc_IC(value, self.ret1d)
+        return self._calc_IC(value, self.target)
 
     def calc_mutual_IC(self, expr1: Expression, expr2: Expression) -> float:
         value1, value2 = self._calc_alpha(expr1), self._calc_alpha(expr2)
@@ -55,11 +56,11 @@ class QLibStockDataCalculator(AlphaCalculator):
     def calc_pool_IC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
-            ic = batch_pearsonr(ensemble_value, self.ret1d).mean().item()
+            ic = batch_pearsonr(ensemble_value, self.target).mean().item()
             return ic
 
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
-            rank_ic = batch_spearmanr(ensemble_value, self.ret1d).mean().item()
+            rank_ic = batch_spearmanr(ensemble_value, self.target).mean().item()
             return rank_ic

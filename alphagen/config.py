@@ -1,5 +1,5 @@
 from alphagen.data.expression import *
-
+from alphagen.data.expression_ocean import *
 
 MAX_EXPR_LENGTH = 20
 MAX_EPISODE_LENGTH = 256
@@ -33,6 +33,7 @@ OPERATORS = [
     Corr,
 ]
 # OPERATORS = Operators
+OPERATORS += OCOperators
 
 DELTA_TIMES = [10, 20, 30, 40, 50]
 
