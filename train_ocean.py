@@ -4,6 +4,7 @@ from typing import Optional
 from datetime import datetime
 
 import numpy as np
+import torch
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import BaseCallback
 from alphagen.data.calculator import AlphaCalculator
@@ -100,7 +101,7 @@ class CustomCallback(BaseCallback):
 
 def main(
     seed: int = 0,
-    instruments: str = "csi300",
+    instruments: str = "all",
     pool_capacity: int = 10,
     steps: int = 200_000,
 ):
@@ -136,7 +137,7 @@ def main(
     )
     env = AlphaEnv(pool=pool, device=device_rl, print_expr=True)
 
-    name_prefix = f"kdd_{instruments}_{pool_capacity}_{seed}"
+    name_prefix = f"ocean_{instruments}_{pool_capacity}_{seed}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     checkpoint_callback = CustomCallback(

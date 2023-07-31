@@ -9,18 +9,48 @@ OPERATORS = [
     Abs,  # Sign,
     Log,
     # Binary
-    Add, Sub, Mul, Div, Greater, Less,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Greater,
+    Less,
     # Rolling
-    Ref, Mean, Sum, Std, Var,  # Skew, Kurt,
-    Max, Min,
-    Med, Mad,  # Rank,
-    Delta, WMA, EMA,
+    Ref,
+    Mean,
+    Sum,
+    Std,
+    Var,  # Skew, Kurt,
+    Max,
+    Min,
+    Med,
+    Mad,  # Rank,
+    Delta,
+    WMA,
+    EMA,
     # Pair rolling
-    Cov, Corr
+    Cov,
+    Corr,
 ]
+# OPERATORS = Operators
 
 DELTA_TIMES = [10, 20, 30, 40, 50]
 
-CONSTANTS = [-30., -10., -5., -2., -1., -0.5, -0.01, 0.01, 0.5, 1., 2., 5., 10., 30.]
+CONSTANTS = [
+    -30.0,
+    -10.0,
+    -5.0,
+    -2.0,
+    -1.0,
+    -0.5,
+    -0.01,
+    0.01,
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0,
+    30.0,
+]
 
-REWARD_PER_STEP = 0.
+REWARD_PER_STEP = 0.0

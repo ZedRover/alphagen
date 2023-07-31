@@ -4,7 +4,7 @@ from typing import List, Type, Union
 import torch
 from torch import Tensor
 
-# from alphagen_qlib.stock_data import StockData, FeatureType # TODO: Need modify
+# from alphagen_qlib.stock_data import StockData, FeatureType # NOTE: modified
 from alphagen_ocean.stock_data_ import StockData, FeatureType
 
 

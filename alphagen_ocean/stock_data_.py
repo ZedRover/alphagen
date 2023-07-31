@@ -53,7 +53,7 @@ class StockData:
                 self.start_idx : self.end_idx, ...
             ]
             data.append(feature_data)
-        data = np.stack(data, axis=1)
+        data = np.stack(data, axis=1)  # feature shape: (BATCH_SIZE,N_PROD,N_FEATURE)
         data = torch.from_numpy(data).to(self.device)
         return data, dates, stock_ids
 
