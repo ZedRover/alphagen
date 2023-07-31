@@ -33,7 +33,6 @@ OPERATORS = [
     Corr,
 ]
 # OPERATORS = Operators
-OPERATORS += OCOperators
 
 DELTA_TIMES = [10, 20, 30, 40, 50]
 

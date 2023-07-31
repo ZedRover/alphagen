@@ -47,6 +47,21 @@ def fillinf(func):
     return fillfunc
 
 
+def shape_checking(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        input_shapes = [arg.shape for arg in args if isinstance(arg, torch.Tensor)]
+        result = func(*args, **kwargs)
+        output_shape = result.shape
+        if input_shapes != output_shape:
+            print(
+                f"Function {func.__name__} changes shape from {input_shapes} to {output_shape}"
+            )
+        return result
+
+    return wrapper
+
+
 def div(x: Tensor, y: Tensor) -> Tensor:
     y = torch.where(torch.abs(y) < EPSILON, 0, y)
     x = torch.where(torch.abs(x) < EPSILON, 0, x)
@@ -74,6 +89,7 @@ def nanmin(input_tensor: torch.Tensor, dim=1, keepdim=True) -> torch.Tensor:
 
 
 class CrsRank(UnaryOperator):
+    @shape_checking
     def _apply(self, x: Tensor) -> Tensor:
         nx = x.detach().cpu().numpy()
         validnum = np.isfinite(nx).sum(axis=1, keepdims=True)
@@ -82,6 +98,7 @@ class CrsRank(UnaryOperator):
 
 
 class BiasCrsRank(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         nx = operand.detach().cpu().numpy()
         nx = bk.nanrankdata(nx, axis=1)
@@ -89,6 +106,7 @@ class BiasCrsRank(UnaryOperator):
 
 
 class NormCrsRank(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         nx = operand.detach().cpu().numpy()
         validnum = np.isfinite(nx).sum(axis=1, keepdims=True)
@@ -97,6 +115,7 @@ class NormCrsRank(UnaryOperator):
 
 
 class FFillBase(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         operand = operand.t()
         mask = torch.isfinite(operand)
@@ -108,6 +127,7 @@ class FFillBase(UnaryOperator):
 
 
 class FFill(UnaryOperator):
+    @shape_checking
     def _apply(self, x: Tensor) -> Tensor:
         mask = torch.isfinite(x)
         idx = torch.where(mask, torch.arange(mask.shape[0])[:, None], 0)
@@ -127,6 +147,7 @@ def _ffill(x):
 
 
 class BFill(UnaryOperator):
+    @shape_checking
     def _apply(self, x: Tensor) -> Tensor:
         x = torch.flip(x, [0])
         x = _ffill(x)
@@ -135,6 +156,7 @@ class BFill(UnaryOperator):
 
 
 class CrsStd(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         operand = torch.nan_to_num(operand, torch.nan, torch.nan, torch.nan)
         res = div(
@@ -144,6 +166,7 @@ class CrsStd(RollingOperator):
 
 
 class CapCrsStd(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int) -> Tensor:
         operand = operand - torch.nanmean(operand, dim=1, keepdim=True)
         std = nanstd(operand, dim=1, keepdim=True)
@@ -163,11 +186,13 @@ class CapCrsStd(RollingOperator):
 
 
 class Cap(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         return torch.clip(operand, -10, 10)
 
 
 class CrsAbs(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         res = (operand - torch.nanmean(operand, dim=1, keepdim=True)) / torch.nansum(
             torch.abs(operand), dim=1, keepdim=True
@@ -176,24 +201,28 @@ class CrsAbs(UnaryOperator):
 
 
 class DeStd(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         res = div(operand, nanstd(operand))
         return torch.nan_to_num(res, 0, 0, 0)
 
 
 class DeNorm(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         res = div(operand, torch.sqrt(torch.nanmean(operand**2, dim=1, keepdim=True)))
         return torch.nan_to_num(res, 0, 0, 0)
 
 
 class CrsDemean(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         res = operand - torch.nanmean(operand, dim=1, keepdim=True)
         return torch.nan_to_num(res, 0, 0, 0)
 
 
 class CrsMean(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         operand = operand - torch.nanmean(operand, dim=1, keepdim=True)
         operand = torch.nan_to_num(operand, 0, 0, 0)
@@ -201,6 +230,7 @@ class CrsMean(UnaryOperator):
 
 
 class RollNp(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int) -> Tensor:
         rolled = torch.roll(operand, shifts=window, dims=1)
         rolled[:, :window] = torch.nan
@@ -208,11 +238,13 @@ class RollNp(RollingOperator):
 
 
 class Roll(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         return torch.nan_to_num(torch.roll(operand, shifts=1, dims=0), 0, 0, 0)
 
 
 class TickNanRoll(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int) -> Tensor:
         operand = torch.roll(operand, shifts=window, dims=0)
         operand[:window] = torch.nan
@@ -220,11 +252,13 @@ class TickNanRoll(RollingOperator):
 
 
 class Delta(UnaryOperator):
+    @shape_checking
     def _apply(self, operand: Tensor) -> Tensor:
         return operand - torch.roll(operand, shifts=1, dims=0)
 
 
 class TickDelta(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         rolled = torch.roll(operand, shifts=window, dims=0)
         rolled[:window] = torch.nan
@@ -238,11 +272,13 @@ def _tick_delta(x: Tensor, window: int = 1) -> Tensor:
 
 
 class TickDDRatio(BinaryOperator):
+    @shape_checking
     def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
         return div(_tick_delta(lhs), _tick_delta(rhs)) - 1
 
 
 class TickLinearDecay(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         rolled = torch.roll(operand, shifts=window, dims=0)
         rolled[:window] = torch.nan
@@ -253,36 +289,42 @@ class TickLinearDecay(RollingOperator):
 
 
 class TsMax(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         return nanmax(res, dim=1, keepdim=True)
 
 
 class TsMin(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         return nanmin(res, dim=1, keepdim=True)
 
 
 class TsStd(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         return nanstd(res, dim=1, keepdim=True)
 
 
 class TsMean(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         return torch.nanmean(res, dim=1, keepdim=True)
 
 
 class TsSum(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         return torch.nansum(res, dim=1, keepdim=True)
 
 
 class TsRank(RollingOperator):
+    @shape_checking
     def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
         res = operand.unfold(0, window, 1)
         mask = torch.isnan(res)
@@ -352,8 +394,8 @@ OCOperators = [
     TsMean,
     TsSum,
     TsRank,
-    TickTsMeanDiff,
-    TickTsRankSingle,
-    TickTsMaxSingle,
-    TickTsMinSingle,
+    # TickTsMeanDiff,
+    # TickTsRankSingle,
+    # TickTsMaxSingle,
+    # TickTsMinSingle,
 ]
