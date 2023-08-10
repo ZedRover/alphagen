@@ -4,7 +4,7 @@ from alphagen.data.expression_ocean import *
 
 DEVICE = torch.device("cuda:1")
 
-MAX_EXPR_LENGTH = 5
+MAX_EXPR_LENGTH = 8
 MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
@@ -28,7 +28,7 @@ OPERATORS = [
     Min,
     Med,
     Mad,  # Rank,
-    Delta,
+    # Delta,
     WMA,
     EMA,
     # Pair rolling
@@ -36,7 +36,7 @@ OPERATORS = [
     Corr,
 ]
 OPERATORS = OPERATORS
-# OPERATORS += OCOperators
+OPERATORS += OCOperators
 
 DELTA_TIMES = [10, 20, 30, 40, 50]
 

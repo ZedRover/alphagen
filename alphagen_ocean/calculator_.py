@@ -81,7 +81,7 @@ class QLibStockDataCalculator(AlphaCalculator):
             rank_ic /= 3
             return rank_ic
 
-    ######################################## TODO ###########################################
+    ################################# TODO ################################
 
     def _calc_q90(self, value: Tensor, target: Tensor) -> float:
         top_10_percent_idx = int(0.1 * len(value))

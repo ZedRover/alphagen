@@ -1,5 +1,6 @@
 from .expression import (
     BinaryOperator,
+    PairRollingOperator,
     UnaryOperator,
     # PairRollingOperator,
     RollingOperator,
@@ -109,21 +110,41 @@ def nanrankdata(tensor, axis=0):
     return ranks
 
 
-class CrsRank(RollingOperator):
+class Square(UnaryOperator):
+    def _apply(self, operand: Tensor) -> Tensor:
+        return torch.nan_to_num(operand**2, 0, 0, 0)
+
+
+class Sqrt(UnaryOperator):
+    def _apply(self, operand: Tensor) -> Tensor:
+        return torch.sign(operand) * torch.sqrt(torch.abs(operand))
+
+
+class Deltaratio(BinaryOperator):
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
+        return torch.nan_to_num(div(lhs, rhs), 0, 0, 0)
+
+
+class NormDeltaratio(BinaryOperator):
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
+        return torch.nan_to_num(div(lhs - rhs, lhs + rhs), 0, 0, 0)
+
+
+class CrsRank(UnaryOperator):
     def _apply(self, x: torch.Tensor) -> torch.Tensor:
         validnum = (~torch.isnan(x)).sum(dim=1, keepdims=True)  # type: ignore
         nx = nanrankdata(x, axis=1) - (validnum + 1) / 2
         return nx
 
 
-class BiasCrsRank(RollingOperator):
+class BiasCrsRank(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         nx = operand.detach().cpu().numpy()
         nx = bk.nanrankdata(nx, axis=1)
         return torch.from_numpy(nx).to(operand.device)
 
 
-class NormCrsRank(RollingOperator):
+class NormCrsRank(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         nx = operand.detach().cpu().numpy()
         validnum = np.isfinite(nx).sum(axis=1, keepdims=True)
@@ -131,7 +152,7 @@ class NormCrsRank(RollingOperator):
         return torch.from_numpy(nx).to(operand.device)
 
 
-class FFillBase(RollingOperator):
+class FFillBase(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         operand = operand.t()
         mask = torch.isfinite(operand)
@@ -142,7 +163,7 @@ class FFillBase(RollingOperator):
         return out
 
 
-class FFill(RollingOperator):
+class FFill(UnaryOperator):
     def _apply(self, x: Tensor) -> Tensor:
         mask = torch.isfinite(x)
         idx = torch.where(mask, torch.arange(mask.shape[0])[:, None], 0)
@@ -161,7 +182,7 @@ def _ffill(x):
     return out
 
 
-class BFill(RollingOperator):
+class BFill(UnaryOperator):
     def _apply(self, x: Tensor) -> Tensor:
         x = torch.flip(x, [0])
         x = _ffill(x)
@@ -169,7 +190,7 @@ class BFill(RollingOperator):
         return x
 
 
-class CrsStd(RollingOperator):
+class CrsStd(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         operand = torch.nan_to_num(operand, torch.nan, torch.nan, torch.nan)
         res = div(
@@ -178,16 +199,17 @@ class CrsStd(RollingOperator):
         return fillnan(res)
 
 
-class CapCrsStd(RollingOperator):
-    def _apply(self, operand: Tensor, window: int) -> Tensor:
-        operand = operand - torch.nanmean(operand, dim=1, keepdim=True)
-        std = nanstd(operand, dim=1, keepdim=True)
+class CapCrsStd(UnaryOperator):
+    def _apply(self, operand: Tensor) -> Tensor:
+        window = 3
+        operand = operand - torch.nanmean(operand, dim=-1, keepdim=True)
+        std = nanstd(operand, dim=-1, keepdim=True)
         mask = torch.abs(operand) < window * std
         sign = torch.sign(operand)
         operand = torch.where(mask, operand, torch.nan)
         operand = div(
-            operand - torch.nanmean(operand, dim=1, keepdim=True),
-            nanstd(operand),
+            operand - torch.nanmean(operand, dim=-1, keepdim=True),
+            nanstd(operand, dim=-1),
         )
         operand_max = torch.where(
             sign > 0, operand, torch.tensor(float("-inf")).to(operand.device)
@@ -201,12 +223,12 @@ class CapCrsStd(RollingOperator):
         return operand
 
 
-class Cap(RollingOperator):
+class Cap(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         return torch.clip(operand, -10, 10)
 
 
-class CrsAbs(RollingOperator):
+class CrsAbs(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         res = (operand - torch.nanmean(operand, dim=1, keepdim=True)) / torch.nansum(
             torch.abs(operand), dim=1, keepdim=True
@@ -214,111 +236,40 @@ class CrsAbs(RollingOperator):
         return torch.nan_to_num(res)
 
 
-class DeStd(RollingOperator):
+class DeStd(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
-        res = div(operand, nanstd(operand))
+        res = div(operand, nanstd(operand, dim=1))
         return torch.nan_to_num(res, 0, 0, 0)
 
 
-class DeNorm(RollingOperator):
+class DeNorm(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         res = div(operand, torch.sqrt(torch.nanmean(operand**2, dim=1, keepdim=True)))
         return torch.nan_to_num(res, 0, 0, 0)
 
 
-class CrsDemean(RollingOperator):
+class CrsDeMean(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         res = operand - torch.nanmean(operand, dim=1, keepdim=True)
         return torch.nan_to_num(res, 0, 0, 0)
 
 
-class CrsMean(RollingOperator):
-    def _apply(self, operand: Tensor) -> Tensor:
-        operand = operand - torch.nanmean(operand, dim=1, keepdim=True)
-        operand = torch.nan_to_num(operand, 0, 0, 0)
-        return operand
+# class RollNp(RollingOperator):
+#     def _apply(self, operand: Tensor, window: int) -> Tensor:
+#         rolled = torch.roll(operand, shifts=window, dims=0)
+#         rolled[:, :window] = torch.nan
+#         return rolled
 
 
-class RollNp(RollingOperator):
-    def _apply(self, operand: Tensor, window: int) -> Tensor:
-        rolled = torch.roll(operand, shifts=window, dims=1)
-        rolled[:, :window] = torch.nan
-        return rolled
-
-
-class Roll(RollingOperator):
-    def _apply(self, operand: Tensor) -> Tensor:
-        return torch.nan_to_num(torch.roll(operand, shifts=1, dims=0), 0, 0, 0)
-
-
-class TickNanRoll(RollingOperator):
-    def _apply(self, operand: Tensor, window: int) -> Tensor:
-        operand = torch.roll(operand, shifts=window, dims=0)
-        operand[:window] = torch.nan
-        return torch.nan_to_num(operand, 0, 0, 0)
-
-
-class Delta(RollingOperator):
-    def _apply(self, operand: Tensor) -> Tensor:
-        return operand - torch.roll(operand, shifts=1, dims=0)
-
-
-class TickDelta(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        rolled = torch.roll(operand, shifts=window, dims=0)
-        rolled[:window] = torch.nan
-        return operand - rolled
-
-
-def _tick_delta(x: Tensor, window: int = 1) -> Tensor:
-    rolled = torch.roll(x, shifts=window, dims=0)
-    rolled[:window] = torch.nan
-    return x - rolled
-
-
-class TickDDRatio(BinaryOperator):
-    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
-        return div(_tick_delta(lhs), _tick_delta(rhs)) - 1
-
-
-class TickLinearDecay(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        rolled = torch.roll(operand, shifts=window, dims=0)
-        rolled[:window] = torch.nan
-        return operand - rolled
+# class Roll(RollingOperator):
+#     def _apply(self, operand: Tensor, window: int) -> Tensor:
+#         rolled = torch.roll(operand, shifts=window, dims=0)
+#         rolled[:, :window] = torch.nan
+#         rolled = torch.nan_to_num(rolled, 0, 0, 0)
+#         return rolled
 
 
 # TimeSeries Funcs
-
-
-class TsMax(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return nanmax(res, dim=2).squeeze(-1)
-
-
-class TsMin(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return nanmin(res, dim=2).squeeze(-1)
-
-
-class TsStd(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return nanstd(res, dim=2).squeeze(-1)
-
-
-class TsMean(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return torch.nanmean(res, dim=2).squeeze(-1)
-
-
-class TsSum(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return torch.nansum(res, dim=2).squeeze(-1)
 
 
 class TsRank(RollingOperator):
@@ -364,35 +315,40 @@ class TickTsMinSingle(RollingOperator):
         return nanmin(res, dim=1)
 
 
+def cossimfunc(stack_x, stack_y, dim=-1):
+    xydot = (stack_x * stack_y).sum(dim=dim)
+    xnorm = torch.linalg.norm(stack_x, 2, dim=dim)
+    ynorm = torch.linalg.norm(stack_y, 2, dim=dim)
+
+    return div(xydot, (xnorm * ynorm))
+
+
+class CossImIc(PairRollingOperator):
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
+        res = cossimfunc(lhs, rhs, dim=-1)
+        return res
+
+
+class MinMaxStd(UnaryOperator):
+    def _apply(self, operand: Tensor):
+        operand_max = torch.nanquantile(operand, 0.99, dim=1, keepdim=True)
+        operand_min = torch.nanquantile(operand, 0.01, dim=1, keepdim=True)
+        operand = div(operand - operand_min, operand_max - operand_min)
+        return torch.nan_to_num(operand, 0, 0, 0)
+
+
 OCOperators = [
+    Square,
     CrsRank,
     BiasCrsRank,
     NormCrsRank,
     FFill,
     BFill,
     CrsStd,
-    CapCrsStd,
+    # CapCrsStd,
     Cap,
     CrsAbs,
     DeStd,
     DeNorm,
-    CrsDemean,
-    CrsMean,
-    RollNp,
-    Roll,
-    # TickNanRoll,
-    # Delta,
-    # TickDelta,
-    # TickDDRatio,
-    # TickLinearDecay,
-    # TsMax,
-    # TsMin,
-    # TsStd,
-    # TsMean,
-    # TsSum,
-    # TsRank,
-    # TickTsMeanDiff,
-    # TickTsRankSingle,
-    # TickTsMaxSingle,
-    # TickTsMinSingle,
+    CrsDeMean,
 ]

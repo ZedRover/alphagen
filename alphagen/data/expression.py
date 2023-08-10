@@ -6,7 +6,6 @@ from torch import Tensor
 
 # from alphagen_qlib.stock_data import StockData, FeatureType # NOTE: modified
 from alphagen_ocean.stock_data_ import StockData, FeatureType
-from alphagen.config import *
 
 
 class OutOfDataRangeError(IndexError):

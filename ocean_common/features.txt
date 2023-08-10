@@ -151,3 +151,4 @@ cne5d_liquidty = sa.attach("shm://qcne5d_liquidty")
 cne5d_liquidty_ret = sa.attach("shm://qcne5d_liquidty_ret")     
 cne5d_sizenl = sa.attach("shm://qcne5d_sizenl")     
 cne5d_sizenl_ret = sa.attach("shm://qcne5d_sizenl_ret")     
+
