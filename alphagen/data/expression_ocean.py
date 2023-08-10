@@ -351,4 +351,5 @@ OCOperators = [
     DeStd,
     DeNorm,
     CrsDeMean,
+    MinMaxStd,
 ]
