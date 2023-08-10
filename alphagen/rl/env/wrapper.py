@@ -14,7 +14,9 @@ SIZE_DELTA_TIME = len(DELTA_TIMES)
 SIZE_CONSTANT = len(CONSTANTS)
 SIZE_SEP = 1
 
-SIZE_ALL = SIZE_NULL + SIZE_OP + SIZE_FEATURE + SIZE_DELTA_TIME + SIZE_CONSTANT + SIZE_SEP
+SIZE_ALL = (
+    SIZE_NULL + SIZE_OP + SIZE_FEATURE + SIZE_DELTA_TIME + SIZE_CONSTANT + SIZE_SEP
+)
 SIZE_ACTION = SIZE_ALL - SIZE_NULL
 
 OFFSET_OP = SIZE_NULL
@@ -52,9 +54,12 @@ class AlphaEnvWrapper(gym.Wrapper):
     def __init__(self, env: AlphaEnvCore):
         super().__init__(env)
         self.action_space = gym.spaces.Discrete(SIZE_ACTION)
-        self.observation_space = gym.spaces.Box(low=0, high=SIZE_ALL - 1, shape=(MAX_EXPR_LENGTH, ), dtype=np.uint8)
+        self.observation_space = gym.spaces.Box(
+            low=0, high=SIZE_ALL - 1, shape=(MAX_EXPR_LENGTH,), dtype=np.uint8
+        )
 
     def reset(self, **kwargs) -> np.ndarray:
+        # print("reset".center(80, '-'))
         self.counter = 0
         self.state = np.zeros(MAX_EXPR_LENGTH, dtype=np.uint8)
         self.env.reset()
@@ -65,6 +70,7 @@ class AlphaEnvWrapper(gym.Wrapper):
         if not done:
             self.state[self.counter] = action
             self.counter += 1
+
         return self.state, self.reward(reward), done, info
 
     def action(self, action: int) -> Token:
@@ -77,18 +83,18 @@ class AlphaEnvWrapper(gym.Wrapper):
         res = np.zeros(SIZE_ACTION, dtype=bool)
         valid = self.env.valid_action_types()
         for i in range(OFFSET_OP, OFFSET_OP + SIZE_OP):
-            if valid['op'][OPERATORS[i - OFFSET_OP].category_type()]:
+            if valid["op"][OPERATORS[i - OFFSET_OP].category_type()]:
                 res[i - 1] = True
-        if valid['select'][1]:  # FEATURE
+        if valid["select"][1]:  # FEATURE
             for i in range(OFFSET_FEATURE, OFFSET_FEATURE + SIZE_FEATURE):
                 res[i - 1] = True
-        if valid['select'][2]:  # CONSTANT
+        if valid["select"][2]:  # CONSTANT
             for i in range(OFFSET_CONSTANT, OFFSET_CONSTANT + SIZE_CONSTANT):
                 res[i - 1] = True
-        if valid['select'][3]:  # DELTA_TIME
+        if valid["select"][3]:  # DELTA_TIME
             for i in range(OFFSET_DELTA_TIME, OFFSET_DELTA_TIME + SIZE_DELTA_TIME):
                 res[i - 1] = True
-        if valid['select'][4]:  # SEP
+        if valid["select"][4]:  # SEP
             res[OFFSET_SEP - 1] = True
         return res
 

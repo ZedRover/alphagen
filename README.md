@@ -26,6 +26,8 @@
 ---------
 
 # NOTE
-- alphagen/config.py 只控制公式的最大长度
-- alphagen/models/model.py 控制使用哪些算子
+- [alphagen/config.py](./alphagen/alphagen/config.py) 控制输入动作维度、最大长度等
 - ...
+
+
+

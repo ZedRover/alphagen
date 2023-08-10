@@ -6,6 +6,7 @@ from torch import Tensor
 
 # from alphagen_qlib.stock_data import StockData, FeatureType # NOTE: modified
 from alphagen_ocean.stock_data_ import StockData, FeatureType
+from alphagen.config import *
 
 
 class OutOfDataRangeError(IndexError):
@@ -92,7 +93,7 @@ class Feature(Expression):
             raise OutOfDataRangeError()
         start = period.start + data.max_backtrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
-        n_feat = int(self._feature.value)  # TODO: GET FEATURE
+        n_feat = int(self._feature.value)
         return data.data[start:stop, n_feat, :]
 
     def __str__(self) -> str:

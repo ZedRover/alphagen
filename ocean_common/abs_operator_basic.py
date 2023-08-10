@@ -562,7 +562,7 @@ class OPTOOL:
         y = y[mask]
         y_pred = y_pred[mask]
 
-        coef = np.corrcoef(y, y_pred)[0, 1]
+        np.corrcoef(y, y_pred)[0, 1]
         return np.corrcoef(y, y_pred)[0, 1]
 
     def tsic_list(self, y, y_pred):

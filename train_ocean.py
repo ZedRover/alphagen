@@ -2,7 +2,8 @@ import json
 import os
 from typing import Optional
 from datetime import datetime
-
+import json
+import random
 import numpy as np
 import torch
 from sb3_contrib.ppo_mask import MaskablePPO
@@ -17,6 +18,7 @@ from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
 from alphagen_ocean.calculator_ import QLibStockDataCalculator
 from alphagen_ocean.stock_data_ import StockData
+from alphagen.config import *
 
 
 class CustomCallback(BaseCallback):
@@ -89,6 +91,14 @@ class CustomCallback(BaseCallback):
             print(f"> Alpha #{i}: {weight}, {expr_str}, {ic_ret}")
         print(f'>> Ensemble ic_ret: {state["best_ic_ret"]}')
         print("---------------------------------------------")
+        metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
+        path = os.path.join(
+            self.save_path,
+            f"{self.name_prefix}_{self.timestamp}",
+            f"{self.num_timesteps}_steps",
+        )
+        with open(f"{path}_state.json", "w") as f:
+            json.dump(metric, f)
 
     @property
     def pool(self) -> AlphaPoolBase:
@@ -107,26 +117,34 @@ def main(
 ):
     reseed_everything(seed)
 
-    device_rl = torch.device("cuda:1")
-    device = torch.device("cpu")
+    device_rl = DEVICE
 
+    device = torch.device("cpu")
     data_train = StockData(
         start_time=20190103,
-        end_time=20190301,
+        end_time=20201231,
         device=device,
     )
     data_valid = StockData(
-        start_time=20190301,
-        end_time=20190315,
+        start_time=20210101,
+        end_time=20210601,
         device=device,
     )
     data_test = StockData(
-        start_time=20190315,
-        end_time=20190401,
+        start_time=20210601,
+        end_time=20211201,
         device=device,
     )
-    calculator_train = QLibStockDataCalculator(data_train)
-    calculator_valid = QLibStockDataCalculator(data_valid)
+    print("train days:", data_train.n_days)
+    print("  val days:", data_valid.n_days)
+    print(" test days:", data_test.n_days)
+
+    calculator_train = QLibStockDataCalculator(
+        data_train,
+    )
+    calculator_valid = QLibStockDataCalculator(
+        data_valid,
+    )
     calculator_test = QLibStockDataCalculator(data_test)
 
     pool = AlphaPool(
@@ -158,14 +176,14 @@ def main(
             features_extractor_class=LSTMSharedNet,
             features_extractor_kwargs=dict(
                 n_layers=2,
-                d_model=128,
+                d_model=128,  # init 128
                 dropout=0.1,
                 device=device_rl,
             ),
         ),
         gamma=1.0,
-        ent_coef=0.01,
-        batch_size=128,
+        ent_coef=0.1,  # NOTE 1e-2
+        batch_size=512,
         tensorboard_log="./log",
         device=device,
         verbose=1,
@@ -178,10 +196,9 @@ def main(
 
 
 if __name__ == "__main__":
-    # steps = {10: 250_000, 20: 300_000, 50: 350_000, 100: 400_000}
-    # for capacity in [10, 20, 30, 50]:
-    #     for seed in range(5):
-    #         for instruments in ["csi300"]:
-    #             # main(seed=seed, instruments=instruments, pool_capacity=capacity, steps=steps[capacity])
-    #             pass
-    main(seed=1, instruments="csi300", pool_capacity=10, steps=250_000)
+    main(
+        seed=random.randint(0, 999),  # trunk-ignore(ruff/S311)
+        instruments=f"lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
+        pool_capacity=10,
+        steps=250_000,
+    )

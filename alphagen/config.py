@@ -1,8 +1,11 @@
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 
-MAX_EXPR_LENGTH = 20
-MAX_EPISODE_LENGTH = 256
+
+DEVICE = torch.device("cuda:1")
+
+MAX_EXPR_LENGTH = 5
+MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
     # Unary
@@ -32,7 +35,8 @@ OPERATORS = [
     Cov,
     Corr,
 ]
-# OPERATORS = Operators
+OPERATORS = OPERATORS
+# OPERATORS += OCOperators
 
 DELTA_TIMES = [10, 20, 30, 40, 50]
 

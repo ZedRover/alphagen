@@ -5,11 +5,12 @@ import torch
 from torch import nn, Tensor
 from torch.distributions import Categorical, Normal
 from alphagen.data.expression import Operators
-from alphagen.data.expression_ocean import OCOperators
+
+# from alphagen.data.expression_ocean import OCOperators
 from alphagen.data.tokens import *
 
 
-Operators = Operators + OCOperators  # NOTE add OCOperators to Operators
+# Operators = Operators + OCOperators  # NOTE add OCOperators to Operators
 
 
 class TokenEmbedding(nn.Module):

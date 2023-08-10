@@ -1,4 +1,3 @@
-from enum import IntEnum
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -67,10 +66,11 @@ class StockData:
         columns: Optional[List[str]] = None,
     ) -> pd.DataFrame:
         """
-        Parameters:
+        Parameters
+        ----------
         - `data`: a tensor of size `(n_days, n_stocks[, n_columns])`, or
         a list of tensors of size `(n_days, n_stocks)`
-        - `columns`: an optional list of column names
+        - `columns`: an optional list of column names.
         """
         if isinstance(data, list):
             data = torch.stack(data, dim=2)
