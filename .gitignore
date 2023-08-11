@@ -6,7 +6,7 @@ playground.ipynb
 playground.py
 ^data/
 out/
-logs/
+log/
 tb_logs/
 get_baostock_data.ipynb
 get_baostock_data.py
