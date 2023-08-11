@@ -124,6 +124,6 @@ def formula_to_expression(formula: str) -> Expression:
 
 
 if __name__ == "__main__":
-    formula = "Var(DeNorm(Cov($qsell_value_large_order,$qintra_tvrriserate_20,10)),20)"
+    formula = "Add(Sub($qnet_incr_cash_cash_equ_ttm,$qamount),Mul($qoper_rev_lyr,$qintra_midprices_5_std))"
     expression = formula_to_expression(formula)
     print(expression)

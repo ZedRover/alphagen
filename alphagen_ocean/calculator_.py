@@ -24,14 +24,11 @@ class QLibStockDataCalculator(AlphaCalculator):
             "/home/public2/share_yw/data/basic_info/RET2D.npy"
         ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
         self.ret5d = np.load(
-            "/home/public2/share_yw/data/basic_info/RET2D.npy"
+            "/home/public2/share_yw/data/basic_info/RET5D.npy"
         ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
         self.ret1d = torch.from_numpy(self.ret1d).to(device)
         self.ret2d = torch.from_numpy(self.ret2d).to(device)
         self.ret5d = torch.from_numpy(self.ret5d).to(device)
-        print(
-            f"mem of retx:{self.ret1d.numel()*self.ret1d.element_size()/(1024**2)} MB"
-        )
 
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))

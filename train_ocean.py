@@ -149,7 +149,7 @@ def main(
     )
     env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
 
-    name_prefix = f"ocean_{instruments}_{pool_capacity}_{seed}"
+    name_prefix = f"{instruments}_{pool_capacity}_{seed}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     checkpoint_callback = CustomCallback(
@@ -192,7 +192,7 @@ def main(
 if __name__ == "__main__":
     main(
         seed=random.randint(0, 999),  # trunk-ignore(ruff/S311)
-        instruments=f"lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
+        instruments=f"satd_lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,
     )
