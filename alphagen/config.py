@@ -2,7 +2,7 @@ from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 
 
-DEVICE_MODEL = torch.device("cuda:1")
+DEVICE_MODEL = torch.device("cuda:3")
 DEVICE_DATA = torch.device("cpu")
 DEVICE_CALC = torch.device("cpu")
 

@@ -31,12 +31,21 @@ def tokenize_formula(formula: str) -> List[str]:
             while i < len(formula) and formula[i].isalnum():
                 token += formula[i]
                 i += 1
+        elif formula[i : i + 8] == "Constant":
+            i += 8
+            const_val = ""
+            while formula[i] != ")":
+                const_val += formula[i]
+                i += 1
+            token = "Constant" + const_val
+            tokens.append(token.strip())
+            token = ""
+            i += 1  # skip the closing parenthesis
         else:
             token += char
             i += 1
     if token:
         tokens.append(token.strip())
-    print("tokens:", tokens)
     return tokens
 
 
@@ -54,6 +63,7 @@ def infix_to_rpn(
             token.startswith("$")
             or token.isdigit()
             or (token[0] == "-" and token[1:].isdigit())
+            or token.startswith("Constant")
         ):
             output.append(token)
         elif is_operator(token):
@@ -74,7 +84,6 @@ def infix_to_rpn(
 
     while stack:
         output.append(stack.pop())
-    print(output)
     return output
 
 
@@ -91,6 +100,9 @@ def formula_to_expression(formula: str) -> Expression:
         if token.startswith("$"):
             feature_type = getattr(FeatureType, token[1:])
             builder.add_token(FeatureToken(feature_type))
+        elif token.startswith("Constant"):
+            value = float(token[9:])
+            builder.add_token(ConstantToken(value))
         elif token.isdigit() or (token[0] == "-" and token[1:].isdigit()):
             try:
                 builder.add_token(DeltaTimeToken(int(token)))
@@ -111,7 +123,7 @@ def formula_to_expression(formula: str) -> Expression:
     return builder.get_tree()
 
 
-# Test
-formula = "Max(CrsStd(Mad(FFill($qret1),40)),40)"
-expression = formula_to_expression(formula)
-print(expression)
+if __name__ == "__main__":
+    formula = "Var(DeNorm(Cov($qsell_value_large_order,$qintra_tvrriserate_20,10)),20)"
+    expression = formula_to_expression(formula)
+    print(expression)

@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from datetime import datetime
 import json
-
+import random
 import numpy as np
 import torch
 from sb3_contrib.ppo_mask import MaskablePPO
@@ -18,6 +18,7 @@ from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
 from alphagen_ocean.calculator_ import QLibStockDataCalculator
 from alphagen_ocean.stock_data_ import StockData
+from alphagen.config import *
 
 
 class CustomCallback(BaseCallback):
@@ -42,7 +43,7 @@ class CustomCallback(BaseCallback):
         self.test_calculator = test_calculator
 
         if timestamp is None:
-            self.timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            self.timestamp = datetime.now().strftime("%Y%m%d%H%M")
         else:
             self.timestamp = timestamp
 
@@ -70,7 +71,7 @@ class CustomCallback(BaseCallback):
     def save_checkpoint(self):
         path = os.path.join(
             self.save_path,
-            f"{self.name_prefix}_{self.timestamp}",
+            f"{self.timestamp}_{self.name_prefix}",
             f"{self.num_timesteps}_steps",
         )
         self.model.save(path)  # type: ignore
@@ -93,7 +94,7 @@ class CustomCallback(BaseCallback):
         metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
         path = os.path.join(
             self.save_path,
-            f"{self.name_prefix}_{self.timestamp}",
+            f"{self.timestamp}_{self.name_prefix}",
             f"{self.num_timesteps}_steps",
         )
         with open(f"{path}_state.json", "w") as f:
@@ -116,39 +117,37 @@ def main(
 ):
     reseed_everything(seed)
 
-    device_rl = torch.device("cuda:3")
-    device = torch.device("cpu")
-
     data_train = StockData(
         start_time=20190103,
         end_time=20201231,
-        device=device,
+        device=DEVICE_DATA,
     )
     data_valid = StockData(
         start_time=20210101,
         end_time=20210601,
-        device=device,
+        device=DEVICE_DATA,
     )
     data_test = StockData(
         start_time=20210601,
         end_time=20211201,
-        device=device,
+        device=DEVICE_DATA,
     )
     print("train days:", data_train.n_days)
     print("  val days:", data_valid.n_days)
     print(" test days:", data_test.n_days)
 
-    calculator_train = QLibStockDataCalculator(data_train)
-    calculator_valid = QLibStockDataCalculator(data_valid)
-    calculator_test = QLibStockDataCalculator(data_test)
+    calculator_train = QLibStockDataCalculator(data_train, device=DEVICE_CALC)
+    calculator_valid = QLibStockDataCalculator(data_valid, device=DEVICE_CALC)
+    calculator_test = QLibStockDataCalculator(data_test, device=DEVICE_CALC)
 
     pool = AlphaPool(
         capacity=pool_capacity,
         calculator=calculator_train,
         ic_lower_bound=None,
         l1_alpha=5e-3,
+        device=DEVICE_MODEL,
     )
-    env = AlphaEnv(pool=pool, device=device_rl, print_expr=True)
+    env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
 
     name_prefix = f"ocean_{instruments}_{pool_capacity}_{seed}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -163,22 +162,21 @@ def main(
         timestamp=timestamp,
         verbose=1,
     )
-    ckpt_path = "/home/ray/workspace/alphagen/checkpoints/ocean_csi300_10_795_20230807174734/137216_steps.zip"
-    model = MaskablePPO.load(ckpt_path)
+
+    ckpt_path = "checkpoints/ocean_lexpr8_lopt34_10_962_20230811101530/251904_steps.zip"
+    model = MaskablePPO.load(ckpt_path, map_location=DEVICE_MODEL)
     model.set_env(env)
     model.learn(
         total_timesteps=steps,
         callback=checkpoint_callback,
-        tb_log_name=f"{name_prefix}_{timestamp}",
+        tb_log_name=f"{timestamp}_{name_prefix}",
     )
 
 
 if __name__ == "__main__":
-    import random
-
     main(
-        seed=random.randint(0, 999),
-        instruments="csi300",
+        seed=random.randint(0, 999),  # trunk-ignore(ruff/S311)
+        instruments=f"lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,
     )

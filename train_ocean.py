@@ -71,7 +71,7 @@ class CustomCallback(BaseCallback):
     def save_checkpoint(self):
         path = os.path.join(
             self.save_path,
-            f"{self.name_prefix}_{self.timestamp}",
+            f"{self.timestamp}_{self.name_prefix}",
             f"{self.num_timesteps}_steps",
         )
         self.model.save(path)  # type: ignore
@@ -94,7 +94,7 @@ class CustomCallback(BaseCallback):
         metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
         path = os.path.join(
             self.save_path,
-            f"{self.name_prefix}_{self.timestamp}",
+            f"{self.timestamp}_{self.name_prefix}",
             f"{self.num_timesteps}_steps",
         )
         with open(f"{path}_state.json", "w") as f:
@@ -185,7 +185,7 @@ def main(
     model.learn(
         total_timesteps=steps,
         callback=checkpoint_callback,
-        tb_log_name=f"{name_prefix}_{timestamp}",
+        tb_log_name=f"{timestamp}_{name_prefix}",
     )
 
 
