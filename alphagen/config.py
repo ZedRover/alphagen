@@ -2,7 +2,9 @@ from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 
 
-DEVICE = torch.device("cuda:1")
+DEVICE_MODEL = torch.device("cuda:1")
+DEVICE_DATA = torch.device("cpu")
+DEVICE_CALC = torch.device("cpu")
 
 MAX_EXPR_LENGTH = 8
 MAX_EPISODE_LENGTH = 512  # 256

@@ -19,20 +19,23 @@ class AlphaPoolBase(metaclass=ABCMeta):
         self,
         capacity: int,
         calculator: AlphaCalculator,
-        device: torch.device = torch.device('cpu')
+        device: torch.device = torch.device("cpu"),
     ):
         self.capacity = capacity
         self.calculator = calculator
         self.device = device
 
     @abstractmethod
-    def to_dict(self) -> dict: ...
+    def to_dict(self) -> dict:
+        ...
 
     @abstractmethod
-    def try_new_expr(self, expr: Expression) -> float: ...
+    def try_new_expr(self, expr: Expression) -> float:
+        ...
 
     @abstractmethod
-    def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]: ...
+    def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]:
+        ...
 
 
 class AlphaPool(AlphaPoolBase):
@@ -42,7 +45,8 @@ class AlphaPool(AlphaPoolBase):
         calculator: AlphaCalculator,
         ic_lower_bound: Optional[float] = None,
         l1_alpha: float = 5e-3,
-        device: torch.device = torch.device('cpu')
+        # trunk-ignore(ruff/B008)
+        device: torch.device = torch.device("cpu"),
     ):
         super().__init__(capacity, calculator, device)
 
@@ -51,9 +55,9 @@ class AlphaPool(AlphaPoolBase):
         self.single_ics: np.ndarray = np.zeros(capacity + 1)
         self.mutual_ics: np.ndarray = np.identity(capacity + 1)
         self.weights: np.ndarray = np.zeros(capacity + 1)
-        self.best_ic_ret: float = -1.
+        self.best_ic_ret: float = -1.0
 
-        self.ic_lower_bound = ic_lower_bound or -1.
+        self.ic_lower_bound = ic_lower_bound or -1.0
         self.l1_alpha = l1_alpha
 
         self.eval_cnt = 0
@@ -61,29 +65,34 @@ class AlphaPool(AlphaPoolBase):
     @property
     def state(self) -> dict:
         return {
-            "exprs": list(self.exprs[:self.size]),
-            "ics_ret": list(self.single_ics[:self.size]),
-            "weights": list(self.weights[:self.size]),
-            "best_ic_ret": self.best_ic_ret
+            "exprs": list(self.exprs[: self.size]),
+            "ics_ret": list(self.single_ics[: self.size]),
+            "weights": list(self.weights[: self.size]),
+            "best_ic_ret": self.best_ic_ret,
         }
 
     def to_dict(self) -> dict:
         return {
-            "exprs": [str(expr) for expr in self.exprs[:self.size]],
-            "weights": list(self.weights[:self.size])
+            "exprs": [str(expr) for expr in self.exprs[: self.size]],
+            "weights": list(self.weights[: self.size]),
         }
 
     def try_new_expr(self, expr: Expression) -> float:
         ic_ret, ic_mut = self._calc_ics(expr, ic_mut_threshold=0.99)
-        if ic_ret is None or ic_mut is None or np.isnan(ic_ret) or np.isnan(ic_mut).any():
-            return 0.
+        if (
+            ic_ret is None
+            or ic_mut is None
+            or np.isnan(ic_ret)
+            or np.isnan(ic_mut).any()
+        ):
+            return 0.0
 
         self._add_factor(expr, ic_ret, ic_mut)
         if self.size > 1:
             new_weights = self._optimize(alpha=self.l1_alpha, lr=5e-4, n_iter=500)
             worst_idx = np.argmin(np.abs(new_weights))
             if worst_idx != self.capacity:
-                self.weights[:self.size] = new_weights
+                self.weights[: self.size] = new_weights
             self._pop()
 
         new_ic_ret = self.evaluate_ensemble()
@@ -102,12 +111,16 @@ class AlphaPool(AlphaPoolBase):
         self._optimize(alpha=self.l1_alpha, lr=5e-4, n_iter=500)
 
     def _optimize(self, alpha: float, lr: float, n_iter: int) -> np.ndarray:
-        if math.isclose(alpha, 0.): # no L1 regularization
-            return self._optimize_lstsq() # very fast
+        if math.isclose(alpha, 0.0):  # no L1 regularization
+            return self._optimize_lstsq()  # very fast
 
-        ics_ret = torch.from_numpy(self.single_ics[:self.size]).to(self.device)
-        ics_mut = torch.from_numpy(self.mutual_ics[:self.size, :self.size]).to(self.device)
-        weights = torch.from_numpy(self.weights[:self.size]).to(self.device).requires_grad_()
+        ics_ret = torch.from_numpy(self.single_ics[: self.size]).to(self.device)
+        ics_mut = torch.from_numpy(self.mutual_ics[: self.size, : self.size]).to(
+            self.device
+        )
+        weights = (
+            torch.from_numpy(self.weights[: self.size]).to(self.device).requires_grad_()
+        )
         optim = torch.optim.Adam([weights], lr=lr)
 
         loss_ic_min = 1e9 + 7  # An arbitrary big value
@@ -142,17 +155,25 @@ class AlphaPool(AlphaPoolBase):
 
     def _optimize_lstsq(self) -> np.ndarray:
         try:
-            return np.linalg.lstsq(self.mutual_ics[:self.size, :self.size],self.single_ics[:self.size])[0]
+            return np.linalg.lstsq(
+                self.mutual_ics[: self.size, : self.size], self.single_ics[: self.size]
+            )[0]
         except (np.linalg.LinAlgError, ValueError):
-            return self.weights[:self.size]
+            return self.weights[: self.size]
 
     def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]:
-        ic = calculator.calc_pool_IC_ret(self.exprs[:self.size], self.weights[:self.size])
-        rank_ic = calculator.calc_pool_rIC_ret(self.exprs[:self.size], self.weights[:self.size])
+        ic = calculator.calc_pool_IC_ret(
+            self.exprs[: self.size], self.weights[: self.size]
+        )
+        rank_ic = calculator.calc_pool_rIC_ret(
+            self.exprs[: self.size], self.weights[: self.size]
+        )
         return ic, rank_ic
 
     def evaluate_ensemble(self) -> float:
-        ic = self.calculator.calc_pool_IC_ret(self.exprs[:self.size], self.weights[:self.size])
+        ic = self.calculator.calc_pool_IC_ret(
+            self.exprs[: self.size], self.weights[: self.size]
+        )
         return ic
 
     @property
@@ -162,9 +183,7 @@ class AlphaPool(AlphaPoolBase):
         return self.size == 0 or abs(self.single_ics[0]) < self.ic_lower_bound
 
     def _calc_ics(
-        self,
-        expr: Expression,
-        ic_mut_threshold: Optional[float] = None
+        self, expr: Expression, ic_mut_threshold: Optional[float] = None
     ) -> Tuple[float, Optional[List[float]]]:
         single_ic = self.calculator.calc_single_IC_ret(expr)
         if not self._under_thres_alpha and single_ic < self.ic_lower_bound:
@@ -179,12 +198,7 @@ class AlphaPool(AlphaPoolBase):
 
         return single_ic, mutual_ics
 
-    def _add_factor(
-        self,
-        expr: Expression,
-        ic_ret: float,
-        ic_mut: List[float]
-    ):
+    def _add_factor(self, expr: Expression, ic_ret: float, ic_mut: List[float]):
         if self._under_thres_alpha and self.size == 1:
             self._pop()
         n = self.size

@@ -43,7 +43,7 @@ class CustomCallback(BaseCallback):
         self.test_calculator = test_calculator
 
         if timestamp is None:
-            self.timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            self.timestamp = datetime.now().strftime("%Y%m%d%H%M")
         else:
             self.timestamp = timestamp
 
@@ -117,43 +117,37 @@ def main(
 ):
     reseed_everything(seed)
 
-    device_rl = DEVICE
-
-    device = torch.device("cpu")
     data_train = StockData(
         start_time=20190103,
         end_time=20201231,
-        device=device,
+        device=DEVICE_DATA,
     )
     data_valid = StockData(
         start_time=20210101,
         end_time=20210601,
-        device=device,
+        device=DEVICE_DATA,
     )
     data_test = StockData(
         start_time=20210601,
         end_time=20211201,
-        device=device,
+        device=DEVICE_DATA,
     )
     print("train days:", data_train.n_days)
     print("  val days:", data_valid.n_days)
     print(" test days:", data_test.n_days)
 
-    calculator_train = QLibStockDataCalculator(
-        data_train,
-    )
-    calculator_valid = QLibStockDataCalculator(
-        data_valid,
-    )
-    calculator_test = QLibStockDataCalculator(data_test)
+    calculator_train = QLibStockDataCalculator(data_train, device=DEVICE_CALC)
+    calculator_valid = QLibStockDataCalculator(data_valid, device=DEVICE_CALC)
+    calculator_test = QLibStockDataCalculator(data_test, device=DEVICE_CALC)
 
     pool = AlphaPool(
         capacity=pool_capacity,
         calculator=calculator_train,
         ic_lower_bound=None,
         l1_alpha=5e-3,
+        device=DEVICE_MODEL,
     )
-    env = AlphaEnv(pool=pool, device=device_rl, print_expr=True)
+    env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
 
     name_prefix = f"ocean_{instruments}_{pool_capacity}_{seed}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -178,14 +172,14 @@ def main(
                 n_layers=2,
                 d_model=128,  # init 128
                 dropout=0.1,
-                device=device_rl,
+                device=DEVICE_MODEL,
             ),
         ),
         gamma=1.0,
         ent_coef=0.1,  # NOTE 1e-2
         batch_size=512,
         tensorboard_log="./log",
-        device=device,
+        device=DEVICE_MODEL,
         verbose=1,
     )
     model.learn(

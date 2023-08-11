@@ -5,8 +5,8 @@ from alphagen.utils.pytorch_utils import masked_mean_std
 
 
 def _mask_either_nan(x: Tensor, y: Tensor, fill_with: float = torch.nan):
-    x = x.clone()                       # [days, stocks]
-    y = y.clone()                       # [days, stocks]
+    x = x.clone()  # [days, stocks]
+    y = y.clone()  # [days, stocks]
     nan_mask = x.isnan() | y.isnan()
     x[nan_mask] = fill_with
     y[nan_mask] = fill_with
@@ -15,18 +15,15 @@ def _mask_either_nan(x: Tensor, y: Tensor, fill_with: float = torch.nan):
 
 
 def _rank_data(x: Tensor, nan_mask: Tensor) -> Tensor:
-    rank = x.argsort().argsort().float()            # [d, s]
-    eq = x[:, None] == x[:, :, None]                # [d, s, s]
-    eq = eq / eq.sum(dim=2, keepdim=True)           # [d, s, s]
+    rank = x.argsort().argsort().float()  # [d, s]
+    eq = x[:, None] == x[:, :, None]  # [d, s, s]
+    eq = eq / eq.sum(dim=2, keepdim=True)  # [d, s, s]
     rank = (eq @ rank[:, :, None]).squeeze(dim=2)
     rank[nan_mask] = 0
-    return rank                                     # [d, s]
+    return rank  # [d, s]
 
 
-def _batch_pearsonr_given_mask(
-    x: Tensor, y: Tensor,
-    n: Tensor, mask: Tensor
-) -> Tensor:
+def _batch_pearsonr_given_mask(x: Tensor, y: Tensor, n: Tensor, mask: Tensor) -> Tensor:
     x_mean, x_std = masked_mean_std(x, n, mask)
     y_mean, y_std = masked_mean_std(y, n, mask)
     cov = (x * y).sum(dim=1) / n - x_mean * y_mean
@@ -36,6 +33,21 @@ def _batch_pearsonr_given_mask(
     return corrs
 
 
+# write a timer func wrapper , print the clean name of func and time, and check the env of the func, if it's in jupyter notebook then print, if it's called by a main func then not print
+def timer(func):
+    def wrapper(*args, **kwargs):
+        import time
+
+        start = time.time()
+        ret = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} cost {end - start} seconds")
+        return ret
+
+    return wrapper
+
+
+@timer
 def batch_spearmanr(x: Tensor, y: Tensor) -> Tensor:
     x, y, n, nan_mask = _mask_either_nan(x, y)
     rx = _rank_data(x, nan_mask)
@@ -43,5 +55,6 @@ def batch_spearmanr(x: Tensor, y: Tensor) -> Tensor:
     return _batch_pearsonr_given_mask(rx, ry, n, nan_mask)
 
 
+# @timer
 def batch_pearsonr(x: Tensor, y: Tensor) -> Tensor:
-    return _batch_pearsonr_given_mask(*_mask_either_nan(x, y, fill_with=0.))
+    return _batch_pearsonr_given_mask(*_mask_either_nan(x, y, fill_with=0.0))

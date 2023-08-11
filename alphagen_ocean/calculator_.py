@@ -73,6 +73,7 @@ class QLibStockDataCalculator(AlphaCalculator):
             return ic
 
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
+        return self.calc_pool_IC_ret(exprs, weights)  # TODO
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
             rank_ic = batch_spearmanr(ensemble_value, self.ret1d).mean().item()
