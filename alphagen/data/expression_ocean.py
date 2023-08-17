@@ -335,6 +335,11 @@ class MinMaxStd(UnaryOperator):
         return torch.nan_to_num(operand, 0, 0, 0)
 
 
+class Clipper(ShiftOperator):
+    def _apply(self, operand: Tensor, bound: int):
+        return fillnan(operand.clip(-bound, bound))
+
+
 OCOperators = [
     Square,
     Sqrt,
@@ -358,4 +363,5 @@ OCOperators = [
     TickLinearTsMean,
     CossImIc,
     MinMaxStd,
+    Clipper,
 ]

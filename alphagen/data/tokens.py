@@ -2,7 +2,7 @@ from enum import IntEnum
 from typing import Type
 
 # from alphagen_qlib.stock_data import FeatureType # TODO
-from alphagen_ocean.stock_data_ import FeatureType
+from alphagen_ocean.stock_data import FeatureType
 
 from alphagen.data.expression import Operator
 

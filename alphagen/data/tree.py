@@ -34,7 +34,7 @@ class ExpressionBuilder:
         elif isinstance(token, FeatureToken):
             self.stack.append(Feature(token.feature))
         else:
-            assert False
+            raise AssertionError()
 
     def is_valid(self) -> bool:
         return len(self.stack) == 1 and self.stack[0].is_featured
@@ -49,7 +49,7 @@ class ExpressionBuilder:
         elif isinstance(token, FeatureToken):
             return self.validate_feature()
         else:
-            assert False
+            raise AssertionError()
 
     def validate_op(self, op: Type[Operator]) -> bool:
         if len(self.stack) < op.n_args():
@@ -81,7 +81,7 @@ class ExpressionBuilder:
             if not self.stack[-2].is_featured:
                 return False
         else:
-            assert False
+            raise AssertionError()
         return True
 
     def validate_dt(self) -> bool:

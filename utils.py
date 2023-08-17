@@ -8,7 +8,7 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data_ import FeatureType, StockData
+from alphagen_ocean.stock_data import FeatureType, StockData
 
 
 def tokenize_formula(formula: str) -> List[str]:
@@ -176,12 +176,12 @@ def backtest_json(
 
 
 if __name__ == "__main__":
-    formula = "Cov(Abs(Std($qfree_shares_today,50)),$qvalue_diff_large_trader_act,50)"
+    formula = "VcAbs(Sub($qoper_rev_lyr,$qoper_rev_ttm))"
     expression = formula_to_expression(formula)
     print(expression)
     data_test = StockData(
         start_time=20210101,
-        end_time=20210601,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     s = time.time()

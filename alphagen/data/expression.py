@@ -2,10 +2,8 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Type, Union
 
 import torch
+from alphagen_ocean.stock_data import FeatureType, StockData
 from torch import Tensor
-
-# from alphagen_qlib.stock_data import StockData, FeatureType # NOTE: modified
-from alphagen_ocean.stock_data_ import StockData, FeatureType
 
 
 def roll_with_nan(tensor: torch.Tensor, shifts: int, dims: int = 0) -> torch.Tensor:

@@ -41,7 +41,7 @@ def action2token(action_raw: int) -> Token:
     elif action == OFFSET_SEP:
         return SequenceIndicatorToken(SequenceIndicatorType.SEP)
     else:
-        assert False
+        raise AssertionError("token not defined")
 
 
 class AlphaEnvWrapper(gym.Wrapper):
@@ -57,9 +57,9 @@ class AlphaEnvWrapper(gym.Wrapper):
         self.observation_space = gym.spaces.Box(
             low=0, high=SIZE_ALL - 1, shape=(MAX_EXPR_LENGTH,), dtype=np.uint8
         )
+        print(f"action-space:{self.action_space}\nobs-space:{self.observation_space}")
 
     def reset(self, **kwargs) -> np.ndarray:
-        # print("reset".center(80, '-'))
         self.counter = 0
         self.state = np.zeros(MAX_EXPR_LENGTH, dtype=np.uint8)
         self.env.reset()

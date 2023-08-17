@@ -9,8 +9,8 @@ from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.correlation import batch_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.calculator_ import QLibStockDataCalculator
-from alphagen_ocean.stock_data_ import StockData
+from alphagen_ocean.calculator import QLibStockDataCalculator
+from alphagen_ocean.stock_data import StockData
 from rich.pretty import pprint
 from utils import formula_to_expression
 

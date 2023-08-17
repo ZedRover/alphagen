@@ -19,7 +19,7 @@
 
   - PairRollingOperator: 这种类型的操作符接受两个操作数和一个时间差，对这两个操作数在给定时间窗口内进行滚动操作。
 
-- [ ] New calculator, combine IC and q9
+- [x] New calculator, combine IC and q9
 - [ ] Finish train process using new opts and features
 - [ ] Speed optimization using cuda or cython
 

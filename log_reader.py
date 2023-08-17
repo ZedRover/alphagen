@@ -18,7 +18,7 @@ def add_empty_lines(log_content: str) -> str:
 
 def get_all_log_files(folder):
     log_files = []
-    for root, dirs, files in os.walk(folder):
+    for root, _, files in os.walk(folder):
         for file in files:
             if "events" in file:
                 log_files.append(os.path.relpath(os.path.join(root, file), LOG_FOLDER))
@@ -38,9 +38,13 @@ def display_log(filename):
     for event in tf.compat.v1.train.summary_iterator(filepath):
         for value in event.summary.value:
             if value.HasField("simple_value"):
+                log_entry = {
+                    "content": f"{value.tag}: {value.simple_value}",
+                    "css_class": "highlight" if value.tag == "test/ic" else "",
+                }
                 if value.tag == "pool/best_ic_ret":
-                    logs.append("\n")
-                logs.append(f"{value.tag}: {value.simple_value}")
+                    logs.append({"content": "\n", "css_class": ""})
+                logs.append(log_entry)
     return render_template("logs.html", logs=logs)
 
 

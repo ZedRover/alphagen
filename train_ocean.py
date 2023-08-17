@@ -15,8 +15,8 @@ from alphagen.rl.env.wrapper import AlphaEnv
 from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
-from alphagen_ocean.calculator_ import QLibStockDataCalculator
-from alphagen_ocean.stock_data_ import StockData
+from alphagen_ocean.calculator import QLibStockDataCalculator
+from alphagen_ocean.stock_data import StockData
 from alphagen.config import *
 
 

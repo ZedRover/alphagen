@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Log Content</title>
+    <title>Logs</title>
+    <style>
+        .highlight {
+            color: red;  /* 或者你想要的任何颜色 */
+        }
+    </style>
 </head>
 <body>
-    <h2>Log Content:</h2>
     <ul>
         {% for log in logs %}
-            <li>{{ log }}</li>
+            <li class="{{ log.css_class }}">{{ log.content }}</li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('index') }}">Back to file list</a>
 </body>
 </html>
