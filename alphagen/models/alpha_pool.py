@@ -162,6 +162,8 @@ class AlphaPool(AlphaPoolBase):
             return self.weights[: self.size]
 
     def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]:
+        if self.size == 0:
+            return 0.0, 0.0
         ic = calculator.calc_pool_IC_ret(
             self.exprs[: self.size], self.weights[: self.size]
         )
@@ -171,6 +173,8 @@ class AlphaPool(AlphaPoolBase):
         return ic, rank_ic
 
     def evaluate_ensemble(self) -> float:
+        if self.size == 0:
+            return 0.0
         ic = self.calculator.calc_pool_IC_ret(
             self.exprs[: self.size], self.weights[: self.size]
         )

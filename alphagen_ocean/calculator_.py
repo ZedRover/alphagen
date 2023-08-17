@@ -1,12 +1,13 @@
 from typing import List
-from torch import Tensor
+
+import numpy as np
 import torch
 from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
 from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data_ import StockData, N_PROD
-import numpy as np
+from alphagen_ocean.stock_data_ import N_PROD, StockData
+from torch import Tensor
 
 
 class QLibStockDataCalculator(AlphaCalculator):
@@ -70,7 +71,7 @@ class QLibStockDataCalculator(AlphaCalculator):
             return ic
 
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
-        return self.calc_pool_IC_ret(exprs, weights)  # TODO
+        return 0  # TODO
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
             rank_ic = batch_spearmanr(ensemble_value, self.ret1d).mean().item()
@@ -89,4 +90,4 @@ class QLibStockDataCalculator(AlphaCalculator):
 
     def calc_q90_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
-        return self._calc_q90(value, self.ret1d)  # 你可以根据需要选择 ret1d, ret2d 或 ret5d
+        return self._calc_q90(value, self.ret1d)

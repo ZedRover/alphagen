@@ -5,7 +5,6 @@ from datetime import datetime
 import json
 import random
 import numpy as np
-import torch
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import BaseCallback
 from alphagen.data.calculator import AlphaCalculator
@@ -163,7 +162,7 @@ def main(
         verbose=1,
     )
 
-    ckpt_path = "checkpoints/ocean_lexpr8_lopt34_10_962_20230811101530/251904_steps.zip"
+    ckpt_path = "checkpoints/20230815095842_satd_lexpr10_lopt34_10_414/251904_steps.zip"
     model = MaskablePPO.load(ckpt_path, map_location=DEVICE_MODEL)
     model.set_env(env)
     model.learn(

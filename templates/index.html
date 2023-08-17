@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TensorFlow Logs</title>
+</head>
+<body>
+    <h2>Select a log file:</h2>
+    <ul>
+        {% for file in files %}
+            <li><a href="{{ url_for('display_log', filename=file) }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

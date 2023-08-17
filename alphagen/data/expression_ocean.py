@@ -1,15 +1,20 @@
-from .expression import (
-    BinaryOperator,
-    PairRollingOperator,
-    UnaryOperator,
-    # PairRollingOperator,
-    RollingOperator,
-)
+from functools import wraps
+from re import T
+from typing import *
+
+import bottleneck as bk
 import numpy as np
 import torch
 from torch import Tensor
-import bottleneck as bk
-from functools import wraps
+
+from .expression import (
+    BinaryOperator,
+    PairRollingOperator,
+    RollingOperator,
+    ShiftOperator,
+    UnaryOperator,
+    roll_with_nan,
+)
 
 N_PROD = 6000
 FILL = "nofill"
@@ -110,6 +115,15 @@ def nanrankdata(tensor, axis=0):
     return ranks
 
 
+def _ffill(x):
+    mask = torch.isfinite(x)
+    idx = torch.where(mask, torch.arange(mask.shape[0])[:, None], 0)
+    idx = torch.cummax(idx, dim=0).values  # use torch.cummax here
+    out = x[idx, torch.arange(idx.shape[1])[None, :]]
+    out = torch.nan_to_num(out, 0, 0, 0)
+    return out
+
+
 class Square(UnaryOperator):
     def _apply(self, operand: Tensor) -> Tensor:
         return torch.nan_to_num(operand**2, 0, 0, 0)
@@ -120,21 +134,16 @@ class Sqrt(UnaryOperator):
         return torch.sign(operand) * torch.sqrt(torch.abs(operand))
 
 
-class Deltaratio(BinaryOperator):
-    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
-        return torch.nan_to_num(div(lhs, rhs), 0, 0, 0)
-
-
-class NormDeltaratio(BinaryOperator):
-    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
-        return torch.nan_to_num(div(lhs - rhs, lhs + rhs), 0, 0, 0)
-
-
 class CrsRank(UnaryOperator):
     def _apply(self, x: torch.Tensor) -> torch.Tensor:
         validnum = (~torch.isnan(x)).sum(dim=1, keepdims=True)  # type: ignore
         nx = nanrankdata(x, axis=1) - (validnum + 1) / 2
         return nx
+
+
+class VcAbs(UnaryOperator):
+    def _apply(self, x: torch.Tensor) -> torch.Tensor:
+        return fillnan(torch.abs(x))
 
 
 class BiasCrsRank(UnaryOperator):
@@ -171,15 +180,6 @@ class FFill(UnaryOperator):
         out = x[idx, torch.arange(idx.shape[1])[None, :]]
         out = torch.nan_to_num(out, 0, 0, 0)
         return out
-
-
-def _ffill(x):
-    mask = torch.isfinite(x)
-    idx = torch.where(mask, torch.arange(mask.shape[0])[:, None], 0)
-    idx = torch.cummax(idx, dim=0).values  # use torch.cummax here
-    out = x[idx, torch.arange(idx.shape[1])[None, :]]
-    out = torch.nan_to_num(out, 0, 0, 0)
-    return out
 
 
 class BFill(UnaryOperator):
@@ -254,65 +254,63 @@ class CrsDeMean(UnaryOperator):
         return torch.nan_to_num(res, 0, 0, 0)
 
 
-# class RollNp(RollingOperator):
-#     def _apply(self, operand: Tensor, window: int) -> Tensor:
-#         rolled = torch.roll(operand, shifts=window, dims=0)
-#         rolled[:, :window] = torch.nan
-#         return rolled
+class Deltaratio(BinaryOperator):
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
+        return torch.nan_to_num(div(lhs, rhs), 0, 0, 0)
 
 
-# class Roll(RollingOperator):
-#     def _apply(self, operand: Tensor, window: int) -> Tensor:
-#         rolled = torch.roll(operand, shifts=window, dims=0)
-#         rolled[:, :window] = torch.nan
-#         rolled = torch.nan_to_num(rolled, 0, 0, 0)
-#         return rolled
+class NormDeltaratio(BinaryOperator):
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
+        return torch.nan_to_num(div(lhs - rhs, lhs + rhs), 0, 0, 0)
 
 
-# TimeSeries Funcs
+class TsMeanDiff(RollingOperator):
+    def _apply(self, operand: Tensor) -> Tensor:
+        return fillnan(operand[:, :, -1] - torch.nanmean(operand, dim=-1))
 
 
-class TsRank(RollingOperator):
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        mask = torch.isnan(res)
-        validnum = torch.sum(torch.isfinite(res), dim=1, keepdim=True)
-        low = torch.sum(res < res[[0], :], dim=1, keepdim=True)
-        high = validnum - torch.sum(res > res[[0], :], dim=1, keepdim=True)
-        rank = (high + low - 1) / (validnum - 1) - 1
-        rank[validnum == 1] = 0
-        rank[mask[0]] = torch.tensor(float("nan"))
-        return rank
+class TickLinearDecay(ShiftOperator):
+    def _apply(self, operand: Tensor, delta_time: int):
+        weights = torch.arange(delta_time, 0, -1).float()
+        weighted_sums = torch.zeros_like(operand)
+
+        for i in range(delta_time):
+            shifted_x = roll_with_nan(operand, i, 0)
+            weighted_sums += shifted_x * weights[i]
+        return fillnan(weighted_sums / weights.sum().item())
 
 
-class TickTsMeanDiff(RollingOperator):
-    @fillinf
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        mean = torch.nanmean(res, dim=1)
-        return operand - mean
+class WgttsMean(ShiftOperator):
+    def _apply(self, operand: Tensor, delta_time: int) -> Tensor:
+        operand = (
+            operand.detach().numpy() if isinstance(operand, torch.Tensor) else operand
+        )
+        out = np.apply_along_axis(np.convolve, 0, operand, delta_time)[
+            : operand.shape[0]
+        ]
+        return torch.from_numpy(out)
 
 
-class TickTsRankSingle(RollingOperator):
-    @fillinf
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        rank = torch.argsort(torch.argsort(res, dim=1), dim=1)
-        return window / 2 * rank
+class TickExptsMean(ShiftOperator):
+    def _apply(self, operand: Tensor, delta_time: int) -> Tensor:
+        kernel = np.logspace(delta_time - 1, 0, delta_time, base=0.6)
+        kernel = kernel / np.sum(kernel)
+        operand = (
+            operand.detach().numpy() if isinstance(operand, torch.Tensor) else operand
+        )
+        out = np.apply_along_axis(np.convolve, 0, operand, kernel)[: operand.shape[0]]
+        return torch.from_numpy(out)
 
 
-class TickTsMaxSingle(RollingOperator):
-    @fillinf
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return nanmax(res, dim=1)
-
-
-class TickTsMinSingle(RollingOperator):
-    @fillinf
-    def _apply(self, operand: Tensor, window: int = 5) -> Tensor:
-        res = operand.unfold(0, window, 1)
-        return nanmin(res, dim=1)
+class TickLinearTsMean(ShiftOperator):
+    def _apply(self, operand: Tensor, delta_time: int) -> Tensor:
+        kernel = np.linspace(1, delta_time, delta_time)
+        kernel = kernel / np.sum(kernel)
+        operand = (
+            operand.detach().numpy() if isinstance(operand, torch.Tensor) else operand
+        )
+        out = np.apply_along_axis(np.convolve, 0, operand, kernel)[: operand.shape[0]]
+        return torch.from_numpy(out)
 
 
 def cossimfunc(stack_x, stack_y, dim=-1):
@@ -339,17 +337,25 @@ class MinMaxStd(UnaryOperator):
 
 OCOperators = [
     Square,
+    Sqrt,
     CrsRank,
+    VcAbs,
     BiasCrsRank,
     NormCrsRank,
     FFill,
     BFill,
     CrsStd,
-    # CapCrsStd,
+    CapCrsStd,
     Cap,
     CrsAbs,
     DeStd,
-    DeNorm,
     CrsDeMean,
+    Deltaratio,
+    NormDeltaratio,
+    TickLinearDecay,
+    WgttsMean,
+    TickExptsMean,
+    TickLinearTsMean,
+    CossImIc,
     MinMaxStd,
 ]

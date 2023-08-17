@@ -1,19 +1,18 @@
+import argparse
 import json
-import json
+
 import numpy as np
 import torch
-
+from alphagen.config import *
 from alphagen.data.expression import *
+from alphagen.data.tokens import *
+from alphagen.data.tree import ExpressionBuilder
+from alphagen.utils.correlation import batch_pearsonr
+from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.calculator_ import QLibStockDataCalculator
 from alphagen_ocean.stock_data_ import StockData
-from alphagen.config import *
-from alphagen.data.tree import ExpressionBuilder
-from alphagen.data.tokens import *
-from alphagen.utils.pytorch_utils import normalize_by_day
-from utils import formula_to_expression
-from alphagen.utils.correlation import batch_pearsonr
 from rich.pretty import pprint
-import argparse
+from utils import formula_to_expression
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -30,7 +29,7 @@ device = torch.device("cpu")
 cuda = torch.device(f"cuda:{args.gpu}")
 data_test = StockData(
     start_time=20210101,
-    end_time=20210601,
+    end_time=20211231,
     device=device,
 )
 cal_test = QLibStockDataCalculator(data_test)

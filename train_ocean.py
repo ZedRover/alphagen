@@ -5,7 +5,6 @@ from datetime import datetime
 import json
 import random
 import numpy as np
-import torch
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import BaseCallback
 from alphagen.data.calculator import AlphaCalculator
@@ -170,7 +169,7 @@ def main(
             features_extractor_class=LSTMSharedNet,
             features_extractor_kwargs=dict(
                 n_layers=2,
-                d_model=128,  # init 128
+                d_model=256,  # init 128
                 dropout=0.1,
                 device=DEVICE_MODEL,
             ),
@@ -191,7 +190,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        seed=random.randint(0, 999),  # trunk-ignore(ruff/S311)
+        seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
         instruments=f"satd_lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,

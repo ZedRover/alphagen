@@ -8,6 +8,21 @@ from torch import Tensor
 from alphagen_ocean.stock_data_ import StockData, FeatureType
 
 
+def roll_with_nan(tensor: torch.Tensor, shifts: int, dims: int = 0) -> torch.Tensor:
+    rolled_tensor = torch.roll(tensor, shifts=shifts, dims=dims)
+
+    mask = torch.ones_like(rolled_tensor, dtype=torch.bool)
+
+    if shifts > 0:
+        mask[:shifts] = False
+    elif shifts < 0:
+        mask[shifts:] = False
+
+    rolled_tensor[~mask] = float("nan")
+
+    return rolled_tensor
+
+
 class OutOfDataRangeError(IndexError):
     pass
 
@@ -310,6 +325,38 @@ class PairRollingOperator(Operator):
     @property
     def is_featured(self):
         return self._lhs.is_featured or self._rhs.is_featured
+
+
+class ShiftOperator(Operator):
+    def __init__(
+        self, operand: Union[Expression, float], shifts: Union[int, DeltaTime] = 5
+    ) -> None:
+        self.operand = operand if isinstance(operand, Expression) else Constant(operand)
+        if isinstance(shifts, DeltaTime):
+            shifts = shifts._delta_time
+        self._shifts = shifts
+
+    @classmethod
+    def n_args(cls) -> int:
+        return 2
+
+    @classmethod
+    def category_type(cls) -> Type["Operator"]:
+        return ShiftOperator
+
+    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+        return self._apply(self.operand.evaluate(data, period), self._shifts)
+
+    @abstractmethod
+    def _apply(self, operand: Tensor, delta_time: int) -> Tensor:
+        return roll_with_nan(operand, shifts=delta_time, dims=0)
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self.operand},{self._shifts})"
+
+    @property
+    def is_featured(self):
+        return self.operand.is_featured
 
 
 # Operator implementations

@@ -24,16 +24,6 @@ def _rank_data(x: Tensor, nan_mask: Tensor) -> Tensor:
     return rank  # [d, s]
 
 
-def _rank_data(x: Tensor, nan_mask: Tensor) -> Tensor:
-    sorted_indices = torchsort.sort(x).indices
-    rank = torchsort.sort(sorted_indices).indices.float()
-    eq = x[:, None] == x[:, :, None]
-    eq = eq.float() / eq.sum(dim=2, keepdim=True)
-    rank = (eq @ rank[:, :, None]).squeeze(dim=2)
-    rank.masked_fill_(nan_mask, 0)
-    return rank
-
-
 def _batch_pearsonr_given_mask(x: Tensor, y: Tensor, n: Tensor, mask: Tensor) -> Tensor:
     x_mean, x_std = masked_mean_std(x, n, mask)
     y_mean, y_std = masked_mean_std(y, n, mask)

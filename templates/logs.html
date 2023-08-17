@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log Content</title>
+</head>
+<body>
+    <h2>Log Content:</h2>
+    <ul>
+        {% for log in logs %}
+            <li>{{ log }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Back to file list</a>
+</body>
+</html>

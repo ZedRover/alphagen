@@ -6,12 +6,13 @@ DEVICE_MODEL = torch.device("cuda:1")
 DEVICE_DATA = torch.device("cpu")
 DEVICE_CALC = torch.device("cpu")
 
-MAX_EXPR_LENGTH = 8
+MAX_EXPR_LENGTH = 5
 MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
     # Unary
-    Abs,  # Sign,
+    Abs,
+    Sign,
     Log,
     # Binary
     Add,
@@ -25,11 +26,14 @@ OPERATORS = [
     Mean,
     Sum,
     Std,
-    Var,  # Skew, Kurt,
+    Var,
+    Skew,
+    Kurt,
     Max,
     Min,
     Med,
-    Mad,  # Rank,
+    Mad,
+    Rank,
     # Delta,
     WMA,
     EMA,
@@ -40,7 +44,7 @@ OPERATORS = [
 OPERATORS = OPERATORS
 OPERATORS += OCOperators
 
-DELTA_TIMES = [10, 20, 30, 40, 50]
+DELTA_TIMES = [5, 10, 15, 20, 30, 40, 50]
 
 CONSTANTS = [
     -30.0,

@@ -15,9 +15,11 @@ FeatureType = Enum("FeatureType", {feature: i for i, feature in enumerate(FEATUR
 
 
 def fetch_valid_td(start, end):
+    print("fetching trading calendar...")
     cld = mcal.get_calendar("XSHG")
     early = cld.schedule(start_date=str(start), end_date=str(end))
     days = early.index.strftime("%Y%m%d").astype(int)
+    print("fetching done")
     return days[0], days[-1]
 
 
@@ -29,7 +31,7 @@ class StockData:
         max_backtrack_days: int = 100,
         max_future_days: int = 30,
         features: Optional[List[FeatureType]] = None,
-        device: torch.device = torch.device("cuda:1"),
+        device: torch.device = torch.device("cpu"),
     ) -> None:
         self._instrument = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.max_backtrack_days = max_backtrack_days
