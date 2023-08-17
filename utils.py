@@ -169,7 +169,7 @@ def backtest_json(
     weights = torch.tensor(alpha["weights"])
 
     # 使用PyTorch的向量化操作来计算factor_value
-    factor_value = sum(f * w for f, w in zip(factors, weights))
+    factor_value = sum(f * w for f, w in zip(factors, weights, strict=False))
     factor_value = normalize_by_day(factor_value)
 
     return factor_value

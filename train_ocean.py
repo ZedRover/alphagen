@@ -54,7 +54,6 @@ class CustomCallback(BaseCallback):
         return True
 
     def _on_rollout_end(self) -> None:
-        assert self.logger is not None
         self.logger.record("pool/size", self.pool.size)
         self.logger.record(
             "pool/significant",
