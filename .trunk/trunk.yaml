@@ -26,6 +26,7 @@ lint:
     - "*.ipynb"
     - notebook/*.ipynb
     - notebook/**/*.ipynb
+    - .trunk/**
 runtimes:
   enabled:
     - go@1.19.5
