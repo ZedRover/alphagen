@@ -65,7 +65,13 @@ class CustomCallback(BaseCallback):
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/rank_ic", rank_ic_test)
         self.save_checkpoint()
-
+        path = os.path.join(
+            self.save_path,
+            f"{self.timestamp}_{self.name_prefix}",
+        ) # TODO
+        with open(f"{path}_ic.json", "w") as f:
+            json.dump({'test/ic':ic_test}, f)
+            
     def save_checkpoint(self):
         path = os.path.join(
             self.save_path,
@@ -89,14 +95,6 @@ class CustomCallback(BaseCallback):
             print(f"> Alpha #{i}: {weight}, {expr_str}, {ic_ret}")
         print(f'>> Ensemble ic_ret: {state["best_ic_ret"]}')
         print("---------------------------------------------")
-        metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
-        path = os.path.join(
-            self.save_path,
-            f"{self.timestamp}_{self.name_prefix}",
-            f"{self.num_timesteps}_steps",
-        )
-        with open(f"{path}_state.json", "w") as f:
-            json.dump(metric, f)
 
     @property
     def pool(self) -> AlphaPoolBase:
@@ -147,7 +145,7 @@ def main(
     )
     env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
 
-    name_prefix = f"ocean_{instruments}_{pool_capacity}_{seed}"
+    name_prefix = f"ocean_{instruments}_{pool_capacity}_{str(seed).zfill(4)}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     checkpoint_callback = CustomCallback(

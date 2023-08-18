@@ -8,7 +8,7 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data import FeatureType, StockData
+from alphagen_ocean.stock_data import FeatureType, StockData,SharedData
 import torch as th
 import ray
 import pandas as pd
@@ -127,7 +127,7 @@ def formula_to_expression(formula: str) -> Expression:
     return builder.get_tree()
 
 
-##########################################################################################
+#########################################################################################
 
 
 def calc_topk(input: Tensor, target: Tensor, topk: int = 10) -> Tensor:
@@ -157,24 +157,23 @@ def backtest_json(
     path: str,
     start_date: int = 20210101,
     end_date: int = 20210601,
+    data: Optional[SharedData] = None,
 ):
-    device = torch.device("cpu")
-    data_test = StockData(start_time=start_date, end_time=end_date, device=device)
+    if data == None:
+        device = torch.device("cpu")
+        data_test = SharedData(start_time=start_date, end_time=end_date, device=device)
+    else:
+        data_test = data
 
     with open(path, "r") as f:
         alpha = json.load(f)
-
-    # 使用列表推导式代替传统的for循环
     factors = [
         Feature(getattr(FeatureType, expr[1:])).evaluate(data_test)
         if expr[0] == "$"
         else formula_to_expression(expr).evaluate(data_test)
         for expr in alpha["exprs"]
     ]
-
     weights = torch.tensor(alpha["weights"])
-
-    # 使用PyTorch的向量化操作来计算factor_value
     factor_value = sum(f * w for f, w in zip(factors, weights, strict=False))
     factor_value = normalize_by_day(factor_value)
 
@@ -273,7 +272,7 @@ def timer(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        print(f"{func.__name__} took {end-start} seconds")
+        print(f"{func.__name__} took {round(end-start)} seconds")
         return result
 
     return wrapper
@@ -282,8 +281,8 @@ def timer(func):
 class Backtester(object):
     def __init__(
         self,
-        start_time: int = 20190101,
-        end_time: int = 20201231,
+        start_time: int = 20190103,
+        end_time: int = 20190605,
         pattern: str = "./checkpoints/*sat*/",
     ) -> None:
         self.start_time = start_time

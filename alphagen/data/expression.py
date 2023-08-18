@@ -106,7 +106,7 @@ class Feature(Expression):
         start = period.start + data.max_backtrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
         n_feat = int(self._feature.value)
-        return data.data[start:stop, n_feat, :]
+        return torch.from_numpy(data.data[start:stop, n_feat, :])
 
     def __str__(self) -> str:
         return "$" + self._feature.name.lower()
@@ -127,8 +127,10 @@ class Constant(Expression):
             or period.stop - 1 > data.max_future_days
         ):
             raise OutOfDataRangeError()
-        device = data.data.device
-        dtype = data.data.dtype
+        # device = data.data.device
+        # dtype = data.data.dtype
+        device = data.device
+        dtype = torch.float32
         days = period.stop - period.start - 1 + data.n_days
         return torch.full(
             size=(days, data.n_stocks),

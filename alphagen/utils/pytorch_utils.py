@@ -30,6 +30,13 @@ def masked_mean_std(
     return mean, std
 
 
+def normalize_by_day(value: Tensor) -> Tensor:
+    mean, std = masked_mean_std(value)
+    value.sub_(mean[:, None]).div_(std[:, None])
+    value = torch.where(torch.isnan(value), torch.zeros_like(value), value)
+    return value
+
+
 # def masked_mean_std(
 #     x: Tensor, n: Optional[Tensor] = None, mask: Optional[Tensor] = None
 # ) -> Tuple[Tensor, Tensor]:
@@ -50,9 +57,9 @@ def masked_mean_std(
 #     return mean, std
 
 
-def normalize_by_day(value: Tensor) -> Tensor:
-    mean, std = masked_mean_std(value)
-    value = (value - mean[:, None]) / std[:, None]
-    nan_mask = torch.isnan(value)
-    value[nan_mask] = 0.0
-    return value
+# def normalize_by_day(value: Tensor) -> Tensor:
+#     mean, std = masked_mean_std(value)
+#     value = (value - mean[:, None]) / std[:, None]
+#     nan_mask = torch.isnan(value)
+#     value[nan_mask] = 0.0
+#     return value
