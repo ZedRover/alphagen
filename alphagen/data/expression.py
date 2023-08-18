@@ -2,8 +2,9 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Type, Union
 
 import torch
-from alphagen_ocean.stock_data import FeatureType, StockData
+from alphagen_ocean.stock_data import N_PROD, FeatureType, StockData
 from torch import Tensor
+import SharedArray as sa
 
 
 def roll_with_nan(tensor: torch.Tensor, shifts: int, dims: int = 0) -> torch.Tensor:
@@ -105,8 +106,13 @@ class Feature(Expression):
             raise OutOfDataRangeError()
         start = period.start + data.max_backtrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
-        n_feat = int(self._feature.value)
-        return torch.from_numpy(data.data[start:stop, n_feat, :])
+        # n_feat = int(self._feature.value)
+        # return torch.from_numpy(data.data[start:stop, n_feat, :])
+        return torch.from_numpy(
+            sa.attach(self._feature.name).reshape(-1, N_PROD)[
+                data.start_idx : data.end_idx
+            ][start:stop]
+        )
 
     def __str__(self) -> str:
         return "$" + self._feature.name.lower()

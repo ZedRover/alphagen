@@ -68,9 +68,9 @@ class CustomCallback(BaseCallback):
         path = os.path.join(
             self.save_path,
             f"{self.timestamp}_{self.name_prefix}",
-        ) # TODO
+        )  # TODO
         with open(f"{path}_ic.json", "w") as f:
-            json.dump({'test/ic':ic_test}, f)
+            json.dump({"test/ic": ic_test}, f)
 
     def save_checkpoint(self):
         path = os.path.join(

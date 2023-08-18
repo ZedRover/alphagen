@@ -8,12 +8,11 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data import FeatureType, StockData,SharedData
+from alphagen_ocean.stock_data import FeatureType, StockData, ArgData
 import torch as th
 import ray
 import pandas as pd
 from alphagen_ocean.calculator import QLibStockDataCalculator
-from alphagen_ocean.stock_data import StockData
 from glob import glob
 
 
@@ -153,15 +152,15 @@ def batch_topk(yhat, y):
     return round(q90, 5), round(q99, 5)
 
 
-def backtest_json(
+def json_to_factor(
     path: str,
     start_date: int = 20210101,
     end_date: int = 20210601,
-    data: Optional[SharedData] = None,
+    data: Optional[StockData] = None,
 ):
     if data == None:
         device = torch.device("cpu")
-        data_test = SharedData(start_time=start_date, end_time=end_date, device=device)
+        data_test = ArgData(start_time=start_date, end_time=end_date, device=device)
     else:
         data_test = data
 
@@ -196,8 +195,8 @@ def calc_factors(data: StockData, path: str):
 
 
 @ray.remote
-def remote_backtest_json(path, start_time, end_time):
-    return backtest_json(path, start_date=start_time, end_date=end_time)
+def remote_json_to_factor(path, start_time, end_time):
+    return json_to_factor(path, start_date=start_time, end_date=end_time)
 
 
 @ray.remote
@@ -295,13 +294,13 @@ class Backtester(object):
             for path in self.paths
         ]
         print(f"num of factors:{len(self.json_paths)}")
-        self.data_test = StockData(self.start_time, self.end_time)
+        self.data_test = ArgData(self.start_time, self.end_time)
         self.calter = QLibStockDataCalculator(self.data_test)
 
     @timer
     def calc_factor(self):
         futures = [
-            remote_backtest_json.remote(path, self.start_time, self.end_time)
+            remote_json_to_factor.remote(path, self.start_time, self.end_time)
             for path in self.json_paths
         ]
         factors = ray.get(futures)
@@ -315,12 +314,13 @@ class Backtester(object):
         for i in range(n):
             for j in range(i + 1, n):
                 future = remote_batch_pearsonr.remote(self.factors[i], self.factors[j])
-                futures.append((i, j, future))
+                futures.append(future)
         df_corr = np.zeros((n, n))
-        for i, j, future in futures:
-            result = ray.get(future)
-            df_corr[i][j] = result
-            df_corr[j][i] = result
+        results = ray.get(futures)
+        for i in range(n):
+            for j in range(i + 1, n):
+                df_corr[i][j] = results[i + j]
+                df_corr[j][i] = results[i + j]
         self.df_corr = df_corr
 
     @timer
@@ -377,7 +377,7 @@ if __name__ == "__main__":
     formula = "DeNorm(Sub($qoper_rev_lyr,$qoper_rev_ttm))"
     expression = formula_to_expression(formula)
     print(expression)
-    data_test = StockData(
+    data_test = ArgData(
         start_time=20210101,
         end_time=20211231,
         device=DEVICE_DATA,

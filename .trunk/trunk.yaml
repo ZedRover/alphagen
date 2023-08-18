@@ -19,6 +19,13 @@ lint:
     - ruff@0.0.282
     - prettier@3.0.1
     - black@23.7.0
+
+  ignore:
+  - linters: [ALL]
+    paths:
+    - "*.ipynb"
+    - notebook/*.ipynb
+    - notebook/**/*.ipynb
 runtimes:
   enabled:
     - go@1.19.5
