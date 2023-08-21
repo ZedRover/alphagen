@@ -1,3 +1,4 @@
+import argparse as ap
 import json
 import os
 from typing import Optional
@@ -19,6 +20,14 @@ from alphagen_ocean.calculator import QLibStockDataCalculator
 from alphagen_ocean.stock_data import ArgData
 from alphagen.config import *
 
+args = ap.ArgumentParser()
+args.add_argument("--gpu", "-g", type=int, default=1)
+args = args.parse_args()
+
+
+DEVICE_MODEL = torch.device(f"cuda:{args.gpu}")
+DEVICE_DATA = torch.device("cpu")
+DEVICE_CALC = torch.device("cpu")
 
 class CustomCallback(BaseCallback):
     def __init__(

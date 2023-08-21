@@ -2,7 +2,7 @@ import json
 import time
 from typing import List, Union
 from alphagen.utils.correlation import batch_pearsonr
-from alphagen.config import DEVICE_DATA, OPERATORS
+from alphagen.config import OPERATORS
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
@@ -68,7 +68,7 @@ def infix_to_rpn(
             or (token[0] == "-" and token[1:].isdigit())
             or token.startswith("Constant")
         ):
-            output.append(token)
+            output.append(token) 
         elif is_operator(token):
             while stack and stack[-1] != "(":
                 output.append(stack.pop())
@@ -147,8 +147,8 @@ def batch_topk(yhat, y):
         y_ = y[i]
         q90.append(calc_topk(yhat_, y_, 10).item())
         q99.append(calc_topk(yhat_, y_, 1).item())
-    q90 = np.mean(q90)
-    q99 = np.mean(q99)
+    q90: np.float32 = np.mean(q90)
+    q99: np.float32 = np.mean(q99)
     return round(q90, 5), round(q99, 5)
 
 
@@ -260,7 +260,7 @@ def remove_high_corr_factors(df_corr, threshold=0.8):
 
         # 重新获取相关性大于阈值的因子对
         high_corr_pairs = np.where(np.triu(df_corr[factors][:, factors], 1) > threshold)
-        high_corr_pairs = [(factors[i], factors[j]) for i, j in zip(*high_corr_pairs)]
+        high_corr_pairs = [(factors[i], factors[j]) for i, j in zip(*high_corr_pairs,strict=False)]
 
     return factors
 
@@ -381,7 +381,7 @@ if __name__ == "__main__":
     data_test = ArgData(
         start_time=20210101,
         end_time=20211231,
-        device=DEVICE_DATA,
+        device=th.device("cpu"),
     )
     s = time.time()
     expression.evaluate(data_test)
