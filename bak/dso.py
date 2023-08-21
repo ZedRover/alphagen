@@ -42,9 +42,9 @@ reseed_everything(seed)
 
 cache = {}
 device = torch.device("cuda:0")
-data = StockData(instruments, "2009-01-01", "2018-12-31", device=device)
-data_valid = StockData(instruments, "2019-01-01", "2019-12-31", device=device)
-data_test = StockData(instruments, "2020-01-01", "2021-12-31", device=device)
+data = ArgData(instruments, "2009-01-01", "2018-12-31", device=device)
+data_valid = ArgData(instruments, "2019-01-01", "2019-12-31", device=device)
+data_test = ArgData(instruments, "2020-01-01", "2021-12-31", device=device)
 
 
 if __name__ == "__main__":

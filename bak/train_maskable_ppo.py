@@ -110,7 +110,7 @@ def main(
     target = Ref(close, -20) / close - 1
 
     # You can re-implement AlphaCalculator instead of using QLibStockDataCalculator.
-    data_train = StockData(
+    data_train = ArgData(
         instrument=instruments,
         start_time="2009-01-01",
         end_time="2018-12-31",
@@ -123,7 +123,7 @@ def main(
         ],
         device=device,
     )
-    data_valid = StockData(
+    data_valid = ArgData(
         instrument=instruments,
         start_time="2019-01-01",
         end_time="2019-12-31",
@@ -136,7 +136,7 @@ def main(
         ],
         device=device,
     )
-    data_test = StockData(
+    data_test = ArgData(
         instrument=instruments,
         start_time="2020-01-01",
         end_time="2020-01-31",

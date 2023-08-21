@@ -8,7 +8,7 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data import FeatureType, StockData, ArgData
+from alphagen_ocean.stock_data import FeatureType, ArgData, ArgData
 import torch as th
 import ray
 import pandas as pd
@@ -156,7 +156,7 @@ def json_to_factor(
     path: str,
     start_date: int = 20210101,
     end_date: int = 20210601,
-    data: Optional[StockData] = None,
+    data: Optional[ArgData] = None,
 ):
     if data == None:
         device = torch.device("cpu")
@@ -179,7 +179,7 @@ def json_to_factor(
     return factor_value
 
 
-def calc_factors(data: StockData, path: str):
+def calc_factors(data: ArgData, path: str):
     with open(path, "r") as f:
         alpha = json.load(f)
     factors = [
@@ -296,6 +296,7 @@ class Backtester(object):
         print(f"num of factors:{len(self.json_paths)}")
         self.data_test = ArgData(self.start_time, self.end_time)
         self.calter = QLibStockDataCalculator(self.data_test)
+        self.factor_name = [path.split("/")[-1] for path in self.json_paths]
 
     @timer
     def calc_factor(self):

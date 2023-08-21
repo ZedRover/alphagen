@@ -21,7 +21,7 @@ def fetch_valid_td(start, end):
     return days[0], days[-1]
 
 
-class StockData:
+class ArgData:
     def __init__(
         self,
         start_time: int = 20190103,
@@ -107,7 +107,7 @@ class StockData:
         return pd.DataFrame(data.detach().cpu().numpy(), index=index, columns=columns)
 
 
-class ArgData(StockData):
+class ArgData(ArgData):
     def __init__(
         self,
         start_time: int = 20190103,

@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Type, Union
 
 import torch
-from alphagen_ocean.stock_data import N_PROD, FeatureType, StockData
+from alphagen_ocean.stock_data import N_PROD, FeatureType, ArgData
 from torch import Tensor
 import SharedArray as sa
 
@@ -28,7 +28,7 @@ class OutOfDataRangeError(IndexError):
 
 class Expression(metaclass=ABCMeta):
     @abstractmethod
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         ...
 
     def __repr__(self) -> str:
@@ -97,7 +97,7 @@ class Feature(Expression):
     def __init__(self, feature: FeatureType) -> None:
         self._feature = feature
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         assert period.step == 1 or period.step is None
         if (
             period.start < -data.max_backtrack_days
@@ -126,7 +126,7 @@ class Constant(Expression):
     def __init__(self, value: float) -> None:
         self._value = value
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         assert period.step == 1 or period.step is None
         if (
             period.start < -data.max_backtrack_days
@@ -159,7 +159,7 @@ class DeltaTime(Expression):
     def __init__(self, delta_time: int) -> None:
         self._delta_time = delta_time
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         assert False, "Should not call evaluate on delta time"
 
     def __str__(self) -> str:
@@ -199,7 +199,7 @@ class UnaryOperator(Operator):
     def category_type(cls) -> Type["Operator"]:
         return UnaryOperator
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         return self._apply(self._operand.evaluate(data, period))
 
     @abstractmethod
@@ -229,7 +229,7 @@ class BinaryOperator(Operator):
     def category_type(cls) -> Type["Operator"]:
         return BinaryOperator
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         return self._apply(
             self._lhs.evaluate(data, period), self._rhs.evaluate(data, period)
         )
@@ -265,7 +265,7 @@ class RollingOperator(Operator):
     def category_type(cls) -> Type["Operator"]:
         return RollingOperator
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         start = period.start - self._delta_time + 1
         stop = period.stop
         # L: period length (requested time window length)
@@ -306,7 +306,7 @@ class PairRollingOperator(Operator):
         return PairRollingOperator
 
     def _unfold_one(
-        self, expr: Expression, data: StockData, period: slice = slice(0, 1)
+        self, expr: Expression, data: ArgData, period: slice = slice(0, 1)
     ) -> Tensor:
         start = period.start - self._delta_time + 1
         stop = period.stop
@@ -316,7 +316,7 @@ class PairRollingOperator(Operator):
         values = expr.evaluate(data, slice(start, stop))  # (L+W-1, S)
         return values.unfold(0, self._delta_time, 1)  # (L, S, W)
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         lhs = self._unfold_one(self._lhs, data, period)
         rhs = self._unfold_one(self._rhs, data, period)
         return self._apply(lhs, rhs)  # (L, S)
@@ -350,7 +350,7 @@ class ShiftOperator(Operator):
     def category_type(cls) -> Type["Operator"]:
         return ShiftOperator
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         return self._apply(self.operand.evaluate(data, period), self._shifts)
 
     @abstractmethod
@@ -441,7 +441,7 @@ class Ref(RollingOperator):
     # at -dt. Nonetheless, it should be classified as rolling since it modifies
     # the time window.
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         start = period.start - self._delta_time
         stop = period.stop - self._delta_time
         return self._operand.evaluate(data, slice(start, stop))
@@ -526,7 +526,7 @@ class Delta(RollingOperator):
     # at -dt and 0. Nonetheless, it should be classified as rolling since it
     # modifies the time window.
 
-    def evaluate(self, data: StockData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
         start = period.start - self._delta_time
         stop = period.stop
         values = self._operand.evaluate(data, slice(start, stop))

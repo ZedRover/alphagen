@@ -25,17 +25,17 @@ reseed_everything(seed)
 cache = {}
 device = torch.device("cuda:1")
 device_data = torch.device("cpu")
-data = StockData(
+data = ArgData(
     start_time=20190103,
     end_time=20201231,
     device=device_data,
 )
-data_valid = StockData(
+data_valid = ArgData(
     start_time=20210101,
     end_time=20210601,
     device=device_data,
 )
-data_test = StockData(
+data_test = ArgData(
     start_time=20210601,
     end_time=20211201,
     device=device_data,

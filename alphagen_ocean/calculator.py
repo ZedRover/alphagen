@@ -6,12 +6,12 @@ from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
 from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr
 from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data import N_PROD, StockData
+from alphagen_ocean.stock_data import N_PROD, ArgData
 from torch import Tensor
 
 
 class QLibStockDataCalculator(AlphaCalculator):
-    def __init__(self, data: StockData, device: torch.device = torch.device("cpu")):
+    def __init__(self, data: ArgData, device: torch.device = torch.device("cpu")):
         self.data = data
         self.device = device
 

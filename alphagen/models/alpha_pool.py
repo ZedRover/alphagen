@@ -9,9 +9,6 @@ from torch import Tensor
 from alphagen.data.calculator import AlphaCalculator
 
 from alphagen.data.expression import Expression
-from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr
-from alphagen.utils.pytorch_utils import masked_mean_std
-from alphagen_qlib.stock_data import StockData
 
 
 class AlphaPoolBase(metaclass=ABCMeta):

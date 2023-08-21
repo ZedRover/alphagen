@@ -21,9 +21,9 @@ class CustomCallback(BaseCallback):
         save_freq: int,
         show_freq: int,
         save_path: str,
-        valid_data: StockData,
+        valid_data: ArgData,
         valid_target: Expression,
-        test_data: StockData,
+        test_data: ArgData,
         test_target: Expression,
         name_prefix: str = "rl_model",
         timestamp: Optional[str] = None,
@@ -113,13 +113,13 @@ def main(
     close = Feature(FeatureType.CLOSE)
     target = Ref(close, -20) / close - 1
 
-    data = StockData(
+    data = ArgData(
         instrument=instruments, start_time="2009-01-01", end_time="2018-12-31"
     )
-    data_valid = StockData(
+    data_valid = ArgData(
         instrument=instruments, start_time="2019-01-01", end_time="2019-12-31"
     )
-    data_test = StockData(
+    data_test = ArgData(
         instrument=instruments, start_time="2020-01-01", end_time="2021-12-31"
     )
 

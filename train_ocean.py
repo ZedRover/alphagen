@@ -16,7 +16,7 @@ from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
 from alphagen_ocean.calculator import QLibStockDataCalculator
-from alphagen_ocean.stock_data import StockData
+from alphagen_ocean.stock_data import ArgData
 from alphagen.config import *
 
 
@@ -69,7 +69,7 @@ class CustomCallback(BaseCallback):
             self.save_path,
             f"{self.timestamp}_{self.name_prefix}",
         )  # TODO
-        with open(f"{path}_ic.json", "w") as f:
+        with open(f"{path}/test_ic.json", "w") as f:
             json.dump({"test/ic": ic_test}, f)
 
     def save_checkpoint(self):
@@ -114,19 +114,19 @@ def main(
 ):
     reseed_everything(seed)
 
-    data_train = StockData(
+    data_train = ArgData(
         start_time=20190103,
         end_time=20201231,
         device=DEVICE_DATA,
     )
-    data_valid = StockData(
+    data_valid = ArgData(
         start_time=20210101,
         end_time=20210601,
         device=DEVICE_DATA,
     )
-    data_test = StockData(
-        start_time=20210601,
-        end_time=20211201,
+    data_test = ArgData(
+        start_time=20210101,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     print("train days:", data_train.n_days)

@@ -10,7 +10,7 @@ from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.correlation import batch_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.calculator import QLibStockDataCalculator
-from alphagen_ocean.stock_data import StockData
+from alphagen_ocean.stock_data import ArgData
 from rich.pretty import pprint
 from utils import formula_to_expression
 
@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 device = torch.device("cpu")
 cuda = torch.device(f"cuda:{args.gpu}")
-data_test = StockData(
+data_test = ArgData(
     start_time=20210101,
     end_time=20211231,
     device=device,

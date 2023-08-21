@@ -16,7 +16,7 @@ from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
 from alphagen_ocean.calculator import QLibStockDataCalculator
-from alphagen_ocean.stock_data import StockData
+from alphagen_ocean.stock_data import ArgData
 from alphagen.config import *
 
 
@@ -69,7 +69,7 @@ class CustomCallback(BaseCallback):
             self.save_path,
             f"{self.timestamp}_{self.name_prefix}",
         )  # TODO
-        with open(f"{path}_ic.json", "w") as f:
+        with open(f"{path}/test_ic.json", "w") as f:
             json.dump({"test/ic": ic_test}, f)
 
     def save_checkpoint(self):
@@ -95,6 +95,7 @@ class CustomCallback(BaseCallback):
             print(f"> Alpha #{i}: {weight}, {expr_str}, {ic_ret}")
         print(f'>> Ensemble ic_ret: {state["best_ic_ret"]}')
         print("---------------------------------------------")
+        metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
 
     @property
     def pool(self) -> AlphaPoolBase:
@@ -113,19 +114,19 @@ def main(
 ):
     reseed_everything(seed)
 
-    data_train = StockData(
+    data_train = ArgData(
         start_time=20190103,
         end_time=20201231,
         device=DEVICE_DATA,
     )
-    data_valid = StockData(
+    data_valid = ArgData(
         start_time=20210101,
         end_time=20210601,
         device=DEVICE_DATA,
     )
-    data_test = StockData(
-        start_time=20210601,
-        end_time=20211201,
+    data_test = ArgData(
+        start_time=20210101,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     print("train days:", data_train.n_days)
@@ -145,7 +146,7 @@ def main(
     )
     env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
 
-    name_prefix = f"ocean_{instruments}_{pool_capacity}_{str(seed).zfill(4)}"
+    name_prefix = f"{instruments}_{pool_capacity}_{str(seed).zfill(4)}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     checkpoint_callback = CustomCallback(
@@ -171,8 +172,8 @@ def main(
 
 if __name__ == "__main__":
     main(
-        seed=random.randint(0, 999),  # trunk-ignore(ruff/S311)
-        instruments=f"lexpr{MAX_EXPR_LENGTH}_lopt{len(OPERATORS)}",
+        seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
+        instruments=f"satd_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,
     )
