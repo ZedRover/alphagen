@@ -207,7 +207,7 @@ class AlphaPool(AlphaPoolBase):
         self.single_ics[n] = ic_ret
         for i in range(n):
             self.mutual_ics[i][n] = self.mutual_ics[n][i] = ic_mut[i]
-        self.weights[n] = ic_ret  # An arbitrary init value
+        self.weights[n] = ic_ret * 10  # TODO An arbitrary init value
         self.size += 1
 
     def _pop(self) -> None:

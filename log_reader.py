@@ -22,7 +22,7 @@ def get_all_log_files(folder):
         for file in files:
             if "events" in file:
                 log_files.append(os.path.relpath(os.path.join(root, file), LOG_FOLDER))
-    return log_files
+    return sorted(log_files)
 
 
 @app.route("/")

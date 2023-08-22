@@ -14,6 +14,7 @@ import ray
 import pandas as pd
 from alphagen_ocean.calculator import QLibStockDataCalculator
 from glob import glob
+from audtorch.metrics.functional import pearsonr
 
 
 def tokenize_formula(formula: str) -> List[str]:
@@ -68,7 +69,7 @@ def infix_to_rpn(
             or (token[0] == "-" and token[1:].isdigit())
             or token.startswith("Constant")
         ):
-            output.append(token) 
+            output.append(token)
         elif is_operator(token):
             while stack and stack[-1] != "(":
                 output.append(stack.pop())
@@ -91,13 +92,8 @@ def infix_to_rpn(
 
 
 def formula_to_expression(formula: str) -> Expression:
-    # 将公式转换为token列表
     tokens = tokenize_formula(formula)
-
-    # 将token列表转换为RPN
     rpn_tokens = infix_to_rpn(tokens)
-
-    # 使用ExpressionBuilder构建表达式
     builder = ExpressionBuilder()
     for token in rpn_tokens:
         if token.startswith("$"):
@@ -209,6 +205,11 @@ def remote_calc_factors(data, path):
     return calc_factors(data, path)
 
 
+@ray.remote
+def aud_pearsonr(tensor1, tensor2) -> float:
+    return th.nanmean(pearsonr(tensor1, tensor2)).item()
+
+
 def remove_low_ic_factors(df_ic_insample, df_ic_outsample, strict=True):
     if strict:
         print("2019-2020")
@@ -260,7 +261,9 @@ def remove_high_corr_factors(df_corr, threshold=0.8):
 
         # 重新获取相关性大于阈值的因子对
         high_corr_pairs = np.where(np.triu(df_corr[factors][:, factors], 1) > threshold)
-        high_corr_pairs = [(factors[i], factors[j]) for i, j in zip(*high_corr_pairs,strict=False)]
+        high_corr_pairs = [
+            (factors[i], factors[j]) for i, j in zip(*high_corr_pairs, strict=False)
+        ]
 
     return factors
 
@@ -314,9 +317,9 @@ class Backtester(object):
 
         for i in range(n):
             for j in range(i + 1, n):
-                future = remote_batch_pearsonr.remote(self.factors[i], self.factors[j])
+                future = aud_pearsonr.remote(self.factors[i], self.factors[j])
                 futures.append(future)
-        df_corr = np.zeros((n, n))
+        df_corr = np.zeros((n, n), dtype=np.float32)
         results = ray.get(futures)
         for i in range(n):
             for j in range(i + 1, n):
@@ -331,9 +334,9 @@ class Backtester(object):
         y5 = self.calter.ret5d
         futures = []
         for y in self.factors:
-            futures.append(remote_batch_pearsonr.remote(y, y1))
-            futures.append(remote_batch_pearsonr.remote(y, y2))
-            futures.append(remote_batch_pearsonr.remote(y, y5))
+            futures.append(aud_pearsonr.remote(y, y1))
+            futures.append(aud_pearsonr.remote(y, y2))
+            futures.append(aud_pearsonr.remote(y, y5))
         results = ray.get(futures)
         data = {"y1": results[::3], "y2": results[1::3], "y5": results[2::3]}
         df_ic = pd.DataFrame(data)
@@ -375,7 +378,9 @@ class DoubleChecker(object):
 
 
 if __name__ == "__main__":
-    formula = "DeNorm(Sub($qoper_rev_lyr,$qoper_rev_ttm))"
+    formula = (
+        "Add($qcne5d_earnyild,Greater($qsell_value_small_order_act,$qs_val_pcf_ncfttm))"
+    )
     expression = formula_to_expression(formula)
     print(expression)
     data_test = ArgData(

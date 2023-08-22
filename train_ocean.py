@@ -74,12 +74,6 @@ class CustomCallback(BaseCallback):
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/rank_ic", rank_ic_test)
         self.save_checkpoint()
-        path = os.path.join(
-            self.save_path,
-            f"{self.timestamp}_{self.name_prefix}",
-        )  # TODO
-        with open(f"{path}/test_ic.json", "w") as f:
-            json.dump({"test/ic": ic_test}, f)
 
     def save_checkpoint(self):
         path = os.path.join(

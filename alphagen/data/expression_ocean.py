@@ -321,7 +321,7 @@ def cossimfunc(stack_x, stack_y, dim=-1):
     return div(xydot, (xnorm * ynorm))
 
 
-class CossImIc(PairRollingOperator):
+class CosSimIC(PairRollingOperator):
     def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
         res = cossimfunc(lhs, rhs, dim=-1)
         return res
@@ -363,7 +363,7 @@ OCOperators = [
     WgttsMean,
     TickExptsMean,
     TickLinearTsMean,
-    CossImIc,
+    CosSimIC,
     MinMaxStd,
     Clipper,
 ]

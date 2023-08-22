@@ -1,10 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Type, Union
-
+import SharedArray as sa
 import torch
 from alphagen_ocean.stock_data import N_PROD, FeatureType, ArgData
 from torch import Tensor
-import SharedArray as sa
 
 
 def roll_with_nan(tensor: torch.Tensor, shifts: int, dims: int = 0) -> torch.Tensor:
