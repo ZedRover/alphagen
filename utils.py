@@ -2,17 +2,19 @@ import json
 import time
 from typing import List, Union
 from alphagen.utils.correlation import batch_pearsonr
+from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen.config import OPERATORS
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
-from alphagen.utils.pytorch_utils import normalize_by_day
-from alphagen_ocean.stock_data import FeatureType, ArgData, ArgData
+from alphagen_ocean.stock_data import FeatureType, ArgData
+from alphagen_ocean.calculator import QLibStockDataCalculator
+
 import torch as th
 import ray
 import pandas as pd
-from alphagen_ocean.calculator import QLibStockDataCalculator
+
 from glob import glob
 from audtorch.metrics.functional import pearsonr
 
@@ -299,7 +301,7 @@ class Backtester(object):
         print(f"num of factors:{len(self.json_paths)}")
         self.data_test = ArgData(self.start_time, self.end_time)
         self.calter = QLibStockDataCalculator(self.data_test)
-        self.factor_names = [path.split("/")[-1] for path in self.json_paths]
+        self.factor_names = [path.split("/")[-2] for path in self.json_paths]
 
     @timer
     def calc_factor(self):
@@ -309,6 +311,7 @@ class Backtester(object):
         ]
         factors = ray.get(futures)
         self.factors = factors
+        return factors
 
     @timer
     def calc_corr(self):
@@ -378,9 +381,7 @@ class DoubleChecker(object):
 
 
 if __name__ == "__main__":
-    formula = (
-        "Add($qcne5d_earnyild,Greater($qsell_value_small_order_act,$qs_val_pcf_ncfttm))"
-    )
+    formula = "Add($qnet_incr_cash_cash_equ_ttm,Greater(DeStd(Deltaratio(Constant(-0.5),$qbuy_value_exlarge_order_act)),BiasCrsRank($qnet_inflow_rate_value)))"
     expression = formula_to_expression(formula)
     print(expression)
     data_test = ArgData(
