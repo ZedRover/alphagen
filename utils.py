@@ -299,7 +299,7 @@ class Backtester(object):
         print(f"num of factors:{len(self.json_paths)}")
         self.data_test = ArgData(self.start_time, self.end_time)
         self.calter = QLibStockDataCalculator(self.data_test)
-        self.factor_name = [path.split("/")[-1] for path in self.json_paths]
+        self.factor_names = [path.split("/")[-1] for path in self.json_paths]
 
     @timer
     def calc_factor(self):
