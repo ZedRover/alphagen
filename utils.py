@@ -1,3 +1,4 @@
+from concurrent.futures import ProcessPoolExecutor
 import json
 import time
 from typing import List, Union
@@ -229,15 +230,12 @@ def remove_low_ic_factors(df_ic_insample, df_ic_outsample, strict=True):
 
 def remove_high_corr_factors(df_corr, threshold=0.8):
     factors = list(range(df_corr.shape[0]))
-
-    # 获取相关性大于阈值的因子对
     high_corr_pairs = np.where(np.triu(df_corr, 1) > threshold)
     high_corr_pairs = [(i, j) for i, j in zip(*high_corr_pairs)]
 
     removed_factors = set()
 
     while high_corr_pairs:
-        # 对于每一对高相关性的因子，计算它们与其他因子的平均相关性
         avg_corrs = {}
         for factor1, factor2 in high_corr_pairs:
             avg_corr_factor1 = np.mean(
@@ -248,7 +246,6 @@ def remove_high_corr_factors(df_corr, threshold=0.8):
             )
             avg_corrs[(factor1, factor2)] = (avg_corr_factor1, avg_corr_factor2)
 
-        # 从每一对高相关性的因子中，移除平均相关性较高的那个因子
         for (factor1, factor2), (
             avg_corr_factor1,
             avg_corr_factor2,
@@ -258,10 +255,8 @@ def remove_high_corr_factors(df_corr, threshold=0.8):
             else:
                 removed_factors.add(factor2)
 
-        # 更新factors列表
         factors = [f for f in factors if f not in removed_factors]
 
-        # 重新获取相关性大于阈值的因子对
         high_corr_pairs = np.where(np.triu(df_corr[factors][:, factors], 1) > threshold)
         high_corr_pairs = [
             (factors[i], factors[j]) for i, j in zip(*high_corr_pairs, strict=False)
@@ -305,13 +300,18 @@ class Backtester(object):
 
     @timer
     def calc_factor(self):
-        futures = [
-            remote_json_to_factor.remote(path, self.start_time, self.end_time)
-            for path in self.json_paths
-        ]
-        factors = ray.get(futures)
+        with ProcessPoolExecutor(max_workers=160) as executor:
+            factors = executor.map(json_to_factor, self.json_paths)
+            factors = list(factors)
         self.factors = factors
         return factors
+        # futures = [
+        #     remote_json_to_factor.remote(path, self.start_time, self.end_time)
+        #     for path in self.json_paths
+        # ]
+        # factors = ray.get(futures)
+        # self.factors = factors
+        # return self.factors
 
     @timer
     def calc_corr(self):
@@ -341,9 +341,9 @@ class Backtester(object):
         y5 = self.calter.ret5d
         futures = []
         for y in self.factors:
-            futures.append(aud_pearsonr.remote(y, y1))
-            futures.append(aud_pearsonr.remote(y, y2))
-            futures.append(aud_pearsonr.remote(y, y5))
+            futures.append(remote_batch_pearsonr.remote(y, y1))
+            futures.append(remote_batch_pearsonr.remote(y, y2))
+            futures.append(remote_batch_pearsonr.remote(y, y5))
         results = ray.get(futures)
         data = {"y1": results[::3], "y2": results[1::3], "y5": results[2::3]}
         df_ic = pd.DataFrame(data)
