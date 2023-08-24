@@ -315,20 +315,24 @@ class Backtester(object):
 
     @timer
     def calc_corr(self):
-        n = len(self.factors)
-        futures = []
+        df_fact = torch.stack(self.factors, dim=1).squeeze()
+        df_fact = pd.DataFrame(df_fact)
+        self.df_corr = df_fact.corr().values
+        return self.df_corr
+        # n = len(self.factors)
+        # futures = []
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                future = aud_pearsonr.remote(self.factors[i], self.factors[j])
-                futures.append(future)
-        df_corr = np.zeros((n, n), dtype=np.float32)
-        results = ray.get(futures)
-        for i in range(n):
-            for j in range(i + 1, n):
-                df_corr[i][j] = results[i + j]
-                df_corr[j][i] = results[i + j]
-        self.df_corr = df_corr
+        # for i in range(n):
+        #     for j in range(i + 1, n):
+        #         future = aud_pearsonr.remote(self.factors[i], self.factors[j])
+        #         futures.append(future)
+        # df_corr = np.zeros((n, n), dtype=np.float32)
+        # results = ray.get(futures)
+        # for i in range(n):
+        #     for j in range(i + 1, n):
+        #         df_corr[i][j] = results[i + j]
+        #         df_corr[j][i] = results[i + j]
+        # self.df_corr = df_corr
 
     @timer
     def calc_ic(self):
