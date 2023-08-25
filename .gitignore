@@ -12,6 +12,6 @@ tb_logs/
 get_baostock_data.ipynb
 get_baostock_data.py
 checkpoints/
-!checkpoints/*/251904_steps_pool.json
+!checkpoints/**/251904_steps_pool.json
 data_collection/data
 *.tar.gz
