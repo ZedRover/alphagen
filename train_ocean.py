@@ -22,6 +22,7 @@ from alphagen.config import *
 args = ap.ArgumentParser()
 args.add_argument("--gpu", "-g", type=int, default=1)
 args.add_argument("--name", "-n", type=str, default="satd")
+args.add_argument("--kwargs", "-k", type=str, default="None")
 args = args.parse_args()
 
 
