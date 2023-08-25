@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qvolume",
+        "$qopen_net_inflow_rate_value",
+        "$qs_dq_freeturnover",
+        "$qnet_inflow_rate_value_l",
+        "$qintra_price5avgmidp11",
+        "$qcne5d_pred_beta",
+        "$qintra_midp10vol_corr",
+        "$qintra_abv_5_mean",
+        "$qret5",
+        "$qcne5d_sizenl"
+    ],
+    "weights": [
+        -0.014833536363894903,
+        0.007863738081581863,
+        -0.04061196398828035,
+        -0.005517490297227334,
+        0.011153769511447425,
+        0.0069724782559350195,
+        -0.006854762476584849,
+        -0.00727557279837165,
+        -0.006593261855959586,
+        -0.012258458075152651
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qintra_askheight_5_mean",
+        "$qintra_deltanetbuy_5_stdev",
+        "$qintra_price5avgmidp11",
+        "$qcne5d_momentum",
+        "$qcne5d_beta",
+        "$qcne5d_spec_risk",
+        "$qcumvolume",
+        "$qintra_midp10vol_corr",
+        "Square($qs_dq_turn)",
+        "$qintra_midprice10_ret_stdev"
+    ],
+    "weights": [
+        0.010604176879045309,
+        -0.008979967140344445,
+        0.009881157527927639,
+        0.003744190853334326,
+        0.007531384430600399,
+        -0.010759184357332838,
+        -0.012435051673374128,
+        -0.007809108689250831,
+        -0.03305051518485982,
+        -0.013188137391151744
+    ]
+}

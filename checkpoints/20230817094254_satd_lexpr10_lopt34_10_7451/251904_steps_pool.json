@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qintra_cumbidval_5_mean",
+        "$qsell_value_exlarge_order",
+        "$qclose_moneyflow_pct_value",
+        "Mad($qintra_deltanetbuy_5_stdev,40)",
+        "$qcumvolume",
+        "$qintra_midprice10_ret_stdev",
+        "$qopen_moneyflow_pct_value",
+        "$qcne5d_spec_risk",
+        "$qintra_spreadavgmidp11",
+        "$qintra_midp10vol_corr"
+    ],
+    "weights": [
+        -0.01692226031198828,
+        0.01480805615251879,
+        -0.007877053645021321,
+        -0.024041987135316613,
+        -0.01848814369182692,
+        -0.014436205558231763,
+        0.014034202044376339,
+        -0.009777875001830154,
+        -0.010671596736175027,
+        -0.0072205079370263065
+    ]
+}

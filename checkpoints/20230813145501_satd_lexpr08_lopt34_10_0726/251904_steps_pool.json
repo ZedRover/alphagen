@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qs_dq_freeturnover",
+        "Min($qintra_midprice10_ret_stdev,30)",
+        "$qintra_spreadavgmidp11",
+        "$qbuy_value_med_order",
+        "NormCrsRank(Cov($qbuy_value_med_order,Std($qcne5d_sizenl_ret,30),30))",
+        "Square($qopen_net_inflow_rate_value_l)",
+        "$qintra_midprice10_ret_stdev",
+        "$qs_dq_turn",
+        "$qintra_cumbidval_5_stdev",
+        "$qsize"
+    ],
+    "weights": [
+        -0.024525701691971272,
+        0.020033265077128524,
+        -0.01341788749682432,
+        0.0013742632763440133,
+        -0.0006415425255075853,
+        -0.01978342330872173,
+        -0.016966151396822733,
+        -0.02394529005854334,
+        -0.005106991989146785,
+        -0.016948666053631514
+    ]
+}

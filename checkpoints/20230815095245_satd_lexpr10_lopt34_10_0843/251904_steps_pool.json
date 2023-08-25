@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qbuy_value_large_order",
+        "$qcne5d_pred_beta",
+        "CrsDeMean($qcumvolume)",
+        "Less($qind_low,$qintra_spreadavgmidp11)",
+        "$qintra_midprice10_ret_stdev",
+        "$qsize",
+        "NormCrsRank(Min($qintra_askheight_5_mean,50))",
+        "$qs_dq_turn",
+        "$qvalue_diff_large_trader",
+        "$qret10"
+    ],
+    "weights": [
+        0.018609160797589057,
+        0.006828190037544876,
+        -0.01735766956642747,
+        -0.01565576960057879,
+        -0.010662746668204236,
+        -0.012759975152217783,
+        0.022319911080556015,
+        -0.04083183687502539,
+        0.005494308932848428,
+        -0.01125145884480959
+    ]
+}

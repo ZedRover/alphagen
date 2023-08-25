@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qret10",
+        "$qcne5d_sizenl",
+        "Sum($qintra_askheight_5_mean,50)",
+        "$qs_dq_freeturnover",
+        "$qsell_value_exlarge_order_act",
+        "$qvwap",
+        "$qintra_spreadavgmidp11",
+        "$qs_dq_turn",
+        "Add(FFill($qlow),Std(FFill($qvolume),50))",
+        "$qintra_midprice10_ret_stdev"
+    ],
+    "weights": [
+        -0.013177916307856972,
+        -0.010112832713994485,
+        0.011873321027772669,
+        -0.016479938734191703,
+        0.0032456157422131914,
+        0.006027547005554463,
+        -0.015296264228993392,
+        -0.019901061972252547,
+        -0.020628544286253627,
+        -0.008459450774007574
+    ]
+}

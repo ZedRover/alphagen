@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qcumvolume",
+        "$qcne5d_spec_risk",
+        "Less(WgttsMean($qcne5d_liquidty,32),VcAbs(Add(BiasCrsRank($qyesterdayclose),$qs_mfd_inflow_large_order)))",
+        "DeNorm($qsell_value_exlarge_order)",
+        "$qopen_moneyflow_pct_value",
+        "$qintra_deltanetbuy_5_stdev",
+        "$qcumhigh",
+        "$qind_open",
+        "Log(Cov($qsell_value_med_order,$qsell_value_large_order,32))",
+        "$qs_val_pcf_ocf"
+    ],
+    "weights": [
+        -0.022461714742037647,
+        -0.018513234633677125,
+        0.012567604368418363,
+        0.011088058097197585,
+        0.011432744020172962,
+        -0.010368709744540806,
+        0.008401831536050263,
+        0.002712788957956693,
+        -0.01951074400970934,
+        -0.007053784231886798
+    ]
+}

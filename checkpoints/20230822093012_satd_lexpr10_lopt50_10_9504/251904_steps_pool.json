@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qintra_midprice10_ret_stdev",
+        "$qcumvolume",
+        "$qintra_bidheight_5_mean",
+        "$qopen_moneyflow_pct_value_l",
+        "$qcne5d_pred_beta",
+        "$qcne5d_total_risk",
+        "$qcne5d_sizenl",
+        "$qintra_price5avgmidp11",
+        "$qind_high",
+        "$qcne5d_momentum"
+    ],
+    "weights": [
+        -0.018506974010456517,
+        -0.021922522904542933,
+        0.006299858281960406,
+        0.00883380076183055,
+        0.015091207731928758,
+        -0.01778663057072609,
+        -0.01695487513336378,
+        0.00747500232101978,
+        0.004963680972914176,
+        0.008402431585887665
+    ]
+}

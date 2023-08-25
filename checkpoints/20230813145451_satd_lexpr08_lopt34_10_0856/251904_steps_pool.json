@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qintra_spreadavgmidp11",
+        "Square($qcne5d_spec_risk)",
+        "Min($qyesterdayskip,40)",
+        "$qsize",
+        "$qtodayopen",
+        "$qnet_inflow_rate_value",
+        "$qcne5d_spec_ret",
+        "BFill($qintra_deltanetbuy_5_stdev)",
+        "MinMaxStd(Ref(Mul(Abs($qvalue_diff_large_trader),$qmoneyflow_pct_value),40))",
+        "$qs_dq_turn"
+    ],
+    "weights": [
+        -0.014749266683918716,
+        -0.02033687371605654,
+        0.014894841642332075,
+        -0.018685488542412004,
+        0.011343013697732744,
+        0.015547168693665573,
+        -0.033830763433961734,
+        -0.015268285071598808,
+        0.013102558062095466,
+        -0.028438310870497367
+    ]
+}

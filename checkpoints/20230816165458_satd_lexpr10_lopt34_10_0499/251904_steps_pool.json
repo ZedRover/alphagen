@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qs_dq_turn",
+        "Div(Sub(CrsStd(CrsRank($qintra_midp10riserate_100)),Sub($qs_mfd_inflow_open_large_order,$qcne5d_earnyild)),$qs_val_mv)",
+        "$qcne5d_spec_ret",
+        "$qtodayopen",
+        "$qintra_cumbidval_5_stdev",
+        "$qsize",
+        "$qintra_midprice10_ret_stdev",
+        "$qmoneyflow_pct_value_l",
+        "$qintra_spreadavgmidp11",
+        "$qnet_inflow_rate_value"
+    ],
+    "weights": [
+        -0.03683273566200436,
+        -0.010505100627580028,
+        -0.03662916786895507,
+        0.009306317649029677,
+        -0.007079143875446873,
+        -0.017141906781903703,
+        -0.011088786930256474,
+        0.007887913368801777,
+        -0.01635054151110053,
+        0.017710839480849883
+    ]
+}

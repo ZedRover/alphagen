@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "VcAbs($qs_dq_turn)",
+        "$qs_mfd_inflow_close_large_order",
+        "$qintra_midprice10_ret_mean",
+        "TickLinearDecay(DeNorm(MinMaxStd($qintra_midprice10_ret_mean)),30)",
+        "$qyesterdayskip",
+        "$qret10",
+        "Mul($qcne5d_spec_ret,Constant(-5.0))",
+        "$qintra_tvrriserate_5",
+        "$qnet_inflow_rate_value",
+        "VcAbs(Sign($qsell_value_med_order))"
+    ],
+    "weights": [
+        -0.02628102678526478,
+        0.016644040937617448,
+        0.03055840661626813,
+        -1.5274506321938468,
+        -0.018671544236434218,
+        0.10817751066302876,
+        -0.019297263551942386,
+        -0.01590574485699599,
+        0.04046959866801595,
+        1.514330333755993
+    ]
+}

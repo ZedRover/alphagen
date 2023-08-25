@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "Mul(FFill($qvwap),Greater($qsell_value_small_order_act,Corr($qintra_price5avgmidp11,$qintra_bidheight_5_mean,16)))",
+        "$qintra_midprice10_ret_stdev",
+        "$qcne5d_beta",
+        "Log(Add(Greater($qintra_cumaskval_5_stdev,$qoper_rev_lyr),Mad(BiasCrsRank($qs_val_ps_ttm),20)))",
+        "VcAbs($qs_mfd_inflow_close)",
+        "$qvwap",
+        "$qcne5d_size",
+        "Min($qs_dq_turn,32)",
+        "Square($qintra_midprice10_ret_mean)",
+        "$qbuy_value_exlarge_order"
+    ],
+    "weights": [
+        0.0037176168773033072,
+        -0.011201530642533259,
+        0.0058975559428395595,
+        -0.009608058577316189,
+        -0.009292242142697162,
+        0.0073604538921136185,
+        -0.008634659374845349,
+        -0.02425797551025799,
+        -0.01629944614932711,
+        -0.09468200694078764
+    ]
+}

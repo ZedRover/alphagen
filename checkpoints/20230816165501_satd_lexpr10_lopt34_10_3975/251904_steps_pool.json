@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qcne5d_spec_risk",
+        "$qintra_cumbidval_5_mean",
+        "$qbuy_value_large_order_act",
+        "$qcne5d_spec_ret",
+        "$qcne5d_sizenl",
+        "$qsell_value_med_order",
+        "$qopen_net_inflow_rate_value",
+        "$qintra_midp10riserate_100",
+        "$qtwap",
+        "$qret5"
+    ],
+    "weights": [
+        -0.01625981094902133,
+        -0.0058161671000979505,
+        0.025061690737058783,
+        -0.027025735952312054,
+        -0.010868496367572832,
+        -0.03695924114904333,
+        0.009908007694551673,
+        0.0009526644166664334,
+        0.011999156458566742,
+        -0.0062186837963296975
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "BFill($qintra_cumaskval_5_mean)",
+        "$qmoneyflow_pct_value",
+        "$qsize",
+        "$qopen_moneyflow_pct_value_l",
+        "$qs_dq_turn",
+        "$qnet_inflow_rate_value",
+        "$qintra_spreadavgmidp11",
+        "$qcne5d_spec_ret",
+        "BFill($qbuy_value_large_order)",
+        "$qintra_askheight_5_mean"
+    ],
+    "weights": [
+        -0.023794007252890888,
+        0.0065803603682587815,
+        -0.01803603986167385,
+        0.014329731332835651,
+        -0.04050393391646267,
+        0.01433343805259615,
+        -0.01737066551792351,
+        -0.03475337984442546,
+        0.013613217765952992,
+        0.01139121409174087
+    ]
+}

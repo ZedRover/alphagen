@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qs_dq_turn",
+        "$qbuy_value_large_order_act",
+        "$qcne5d_sizenl",
+        "$qsize",
+        "$qintra_spreadavgmidp11",
+        "MinMaxStd($qopen)",
+        "BFill($qintra_midprice10_ret_stdev)",
+        "Std($qintra_price5avgmidp11,50)",
+        "$qcumvolume",
+        "$qcne5d_liquidty"
+    ],
+    "weights": [
+        -0.039396590539560995,
+        0.015751941995997647,
+        -0.012664550029692804,
+        -0.017116809821616487,
+        -0.014114113937562796,
+        0.011853268401195218,
+        -0.020610887208656607,
+        -0.03789318909656488,
+        -0.018713065782787072,
+        -0.011892626435889843
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "MinMaxStd(DeNorm($qintra_spreadavgmidp11))",
+        "$qcumvolume",
+        "$qcne5d_spec_ret",
+        "$qbuy_value_large_order",
+        "CrsAbs($qs_dq_freeturnover)",
+        "$qnet_inflow_rate_value",
+        "$qs_dq_turn",
+        "WMA($qret5,40)",
+        "FFill(Corr($qcumvolume,$qintra_cumbidval_5_mean,30))",
+        "DeNorm(MinMaxStd($qvalue_diff_small_trader))"
+    ],
+    "weights": [
+        -0.024883970371095528,
+        -0.015019745577018172,
+        -0.01943594389506248,
+        0.015540973708935932,
+        -0.022880669813871234,
+        0.017592562927027506,
+        -0.01787482377564553,
+        -0.020873204253018376,
+        -0.019087988303215106,
+        -0.015236417947201278
+    ]
+}

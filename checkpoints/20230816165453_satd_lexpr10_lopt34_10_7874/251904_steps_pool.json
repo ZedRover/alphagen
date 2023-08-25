@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qcne5d_beta",
+        "$qvalue_diff_small_trader",
+        "$qintra_midprice10_ret_stdev",
+        "$qcne5d_spec_ret",
+        "BFill($qintra_cumaskval_5_mean)",
+        "Corr($qbuy_value_med_order_act,$qvalue_diff_large_trader_act,40)",
+        "WMA($qintra_midp10riserate_20,30)",
+        "$qs_dq_turn",
+        "$qcne5d_sizenl",
+        "$qintra_price5avgmidp11"
+    ],
+    "weights": [
+        0.0061941865292347515,
+        -0.010757941686027788,
+        -0.01370843233142196,
+        -0.02578068348787476,
+        -0.013157793350527964,
+        0.0069230290190998205,
+        0.014398300968430698,
+        -0.035618182370872,
+        -0.012481424912812816,
+        0.010129616121751244
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "Square(NormCrsRank($qcne5d_spec_ret))",
+        "$qopen_moneyflow_pct_value_l",
+        "$qcne5d_spec_ret",
+        "$qintra_price5avgmidp11",
+        "DeStd(Std($qclose_moneyflow_pct_value_l,30))",
+        "$qmoneyflow_pct_value",
+        "$qopen_net_inflow_rate_value",
+        "$qvalue_diff_small_trader",
+        "$qcne5d_sizenl",
+        "CrsRank(NormCrsRank(Max(Less($qintra_deltasell_5_mean,$qs_val_mv),40)))"
+    ],
+    "weights": [
+        -0.013491284571499892,
+        0.012292397792787653,
+        -0.03576818610522012,
+        0.011808995471789088,
+        -0.01569017959227161,
+        0.013262682011520662,
+        0.007974046058817925,
+        -0.0075486076552077315,
+        -0.008613429060036851,
+        -0.02136231212348108
+    ]
+}

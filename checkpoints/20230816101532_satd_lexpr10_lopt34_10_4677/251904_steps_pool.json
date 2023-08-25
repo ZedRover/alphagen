@@ -1,0 +1,26 @@
+{
+    "exprs": [
+        "$qcne5d_spec_ret",
+        "$qintra_spreadavgmidp11",
+        "$qintra_midprice10_ret_stdev",
+        "$qyesterdayclose",
+        "$qopen_moneyflow_pct_value_l",
+        "$qsell_value_med_order",
+        "Square($qintra_spreadavgmidp11)",
+        "Std($qret10,40)",
+        "$qintra_cumbidval_5_stdev",
+        "$qopen_moneyflow_pct_value"
+    ],
+    "weights": [
+        -0.02968306810187993,
+        -0.03167015872869664,
+        -0.014107332083145385,
+        0.008835364071016656,
+        0.014935403148191789,
+        -0.008072983807435147,
+        -0.025670130174314104,
+        -0.024394604520938334,
+        -0.006828203540972607,
+        0.014389841083841835
+    ]
+}
