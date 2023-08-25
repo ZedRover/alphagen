@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
-from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr
+from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr, pool_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.stock_data import N_PROD, ArgData
 from torch import Tensor
@@ -36,6 +36,9 @@ class QLibStockDataCalculator(AlphaCalculator):
 
     def _calc_IC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_pearsonr(value1, value2).mean().item()
+
+    def _calc_pIC(self, signal: Tensor, target: Tensor) -> float:
+        return pool_pearsonr(signal, target).item()
 
     def _calc_rIC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_spearmanr(value1, value2).mean().item()
@@ -70,8 +73,15 @@ class QLibStockDataCalculator(AlphaCalculator):
             ic /= 3
             return ic
 
+    def calc_pool_pIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
+        with torch.no_grad():
+            ensemble_value = self._make_ensemble_alpha(exprs, weights)
+            pic = pool_pearsonr(ensemble_value, self.ret1d).item()
+            pic += pool_pearsonr(ensemble_value, self.ret2d).item()
+            pic += pool_pearsonr(ensemble_value, self.ret5d).item()
+            return pic / 3
+
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
-        return 0  # TODO
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
             rank_ic = batch_spearmanr(ensemble_value, self.ret1d).mean().item()

@@ -164,10 +164,10 @@ class AlphaPool(AlphaPoolBase):
         ic = calculator.calc_pool_IC_ret(
             self.exprs[: self.size], self.weights[: self.size]
         )
-        rank_ic = calculator.calc_pool_rIC_ret(
+        pool_ic = calculator.calc_pool_pIC_ret(
             self.exprs[: self.size], self.weights[: self.size]
         )
-        return ic, rank_ic
+        return ic, pool_ic
 
     def evaluate_ensemble(self) -> float:
         if self.size == 0:

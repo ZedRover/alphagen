@@ -39,21 +39,13 @@ class ArgData:
         self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
         self.data, self._dates, self._stock_ids = self._get_data()
 
-    def _get_data(self) -> Tuple[torch.Tensor, pd.Index, pd.Index]:
-        features = ["$" + f.name.lower() for f in self._features]
+    def _get_data(self) -> Tuple[None, np.ndarray, np.ndarray]:
         dates = np.load("/home/public2/share_yw/data/basic_info/Dates.npy")
         stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = np.where(dates == self._end_time)[0][0] * MULTI_TI
-        data = []
-        for feature in features:
-            feature_data = sa.attach(feature[1:]).reshape(-1, N_PROD)[
-                self.start_idx : self.end_idx, ...
-            ]
-            data.append(feature_data)
-        data = np.stack(data, axis=1)  # feature shape: (BATCH_SIZE,N_PROD,N_FEATURE)
-        data = torch.from_numpy(data).to(self.device)
-        return data, dates, stock_ids
+
+        return None, dates, stock_ids
 
     @property
     def n_features(self) -> int:
@@ -61,11 +53,16 @@ class ArgData:
 
     @property
     def n_stocks(self) -> int:
-        return self.data.shape[-1]
+        return N_PROD
 
     @property
     def n_days(self) -> int:
-        return self.data.shape[0] - self.max_backtrack_days - self.max_future_days
+        return (
+            self.end_idx
+            - self.start_idx
+            - self.max_backtrack_days
+            - self.max_future_days
+        )
 
     def make_dataframe(
         self,
@@ -105,47 +102,3 @@ class ArgData:
         index = pd.MultiIndex.from_product([date_index, self._stock_ids])
         data = data.reshape(-1, n_columns)
         return pd.DataFrame(data.detach().cpu().numpy(), index=index, columns=columns)
-
-
-class ArgData(ArgData):
-    def __init__(
-        self,
-        start_time: int = 20190103,
-        end_time: int = 20190605,
-        max_backtrack_days: int = 100,
-        max_future_days: int = 30,
-        features: Optional[List[FeatureType]] = None,
-        device: torch.device = torch.device("cpu"),
-    ) -> None:
-        self._instrument = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
-        self.max_backtrack_days = max_backtrack_days
-        self.max_future_days = max_future_days
-        self._features = features if features is not None else list(FeatureType)
-        self.device = device
-        self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
-        self.data, self._dates, self._stock_ids = self._get_data()
-
-    def _get_data(self) -> Tuple[None, np.ndarray, np.ndarray]:
-        dates = np.load("/home/public2/share_yw/data/basic_info/Dates.npy")
-        stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
-        self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
-        self.end_idx = np.where(dates == self._end_time)[0][0] * MULTI_TI
-
-        return None, dates, stock_ids
-
-    @property
-    def n_features(self) -> int:
-        return len(self._features)
-
-    @property
-    def n_stocks(self) -> int:
-        return N_PROD
-
-    @property
-    def n_days(self) -> int:
-        return (
-            self.end_idx
-            - self.start_idx
-            - self.max_backtrack_days
-            - self.max_future_days
-        )

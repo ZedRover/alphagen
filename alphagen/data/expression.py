@@ -111,7 +111,7 @@ class Feature(Expression):
             sa.attach(self._feature.name).reshape(-1, N_PROD)[
                 data.start_idx : data.end_idx
             ][start:stop]
-        )
+        )  # NOTE: load feature
 
     def __str__(self) -> str:
         return "$" + self._feature.name.lower()

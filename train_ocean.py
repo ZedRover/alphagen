@@ -21,6 +21,7 @@ from alphagen.config import *
 
 args = ap.ArgumentParser()
 args.add_argument("--gpu", "-g", type=int, default=1)
+args.add_argument("--name", "-n", type=str, default="satd")
 args = args.parse_args()
 
 
@@ -70,9 +71,9 @@ class CustomCallback(BaseCallback):
         )
         self.logger.record("pool/best_ic_ret", self.pool.best_ic_ret)
         self.logger.record("pool/eval_cnt", self.pool.eval_cnt)
-        ic_test, rank_ic_test = self.pool.test_ensemble(self.test_calculator)
+        ic_test, pic_test = self.pool.test_ensemble(self.test_calculator)
         self.logger.record("test/ic", ic_test)
-        self.logger.record("test/rank_ic", rank_ic_test)
+        self.logger.record("test/pool_ic", pic_test)
         self.save_checkpoint()
 
     def save_checkpoint(self):
@@ -192,7 +193,7 @@ def main(
 if __name__ == "__main__":
     main(
         seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
-        instruments=f"satd_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
+        instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,
     )

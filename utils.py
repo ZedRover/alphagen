@@ -146,8 +146,8 @@ def batch_topk(yhat, y):
         y_ = y[i]
         q90.append(calc_topk(yhat_, y_, 10).item())
         q99.append(calc_topk(yhat_, y_, 1).item())
-    q90: np.float32 = np.mean(q90)
-    q99: np.float32 = np.mean(q99)
+    q99 = np.mean(np.array(q99))
+    q90 = np.mean(np.array(q90))
     return round(q90, 5), round(q99, 5)
 
 
@@ -155,13 +155,9 @@ def json_to_factor(
     path: str,
     start_date: int = 20210101,
     end_date: int = 20210601,
-    data: Optional[ArgData] = None,
 ):
-    if data == None:
-        device = torch.device("cpu")
-        data_test = ArgData(start_time=start_date, end_time=end_date, device=device)
-    else:
-        data_test = data
+    device = torch.device("cpu")
+    data_test = ArgData(start_time=start_date, end_time=end_date, device=device)
 
     with open(path, "r") as f:
         alpha = json.load(f)
