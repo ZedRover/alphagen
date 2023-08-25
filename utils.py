@@ -300,39 +300,35 @@ class Backtester(object):
 
     @timer
     def calc_factor(self):
+        n = len(self.json_paths)
         with ProcessPoolExecutor(max_workers=160) as executor:
-            factors = executor.map(json_to_factor, self.json_paths)
+            factors = executor.map(
+                json_to_factor,
+                self.json_paths,
+                [self.start_time] * n,
+                [self.end_time] * n,
+            )
             factors = list(factors)
         self.factors = factors
         return factors
-        # futures = [
-        #     remote_json_to_factor.remote(path, self.start_time, self.end_time)
-        #     for path in self.json_paths
-        # ]
-        # factors = ray.get(futures)
-        # self.factors = factors
-        # return self.factors
 
     @timer
     def calc_corr(self):
-        df_fact = torch.stack(self.factors, dim=1).squeeze()
-        df_fact = pd.DataFrame(df_fact)
-        self.df_corr = df_fact.corr().values
-        return self.df_corr
-        # n = len(self.factors)
-        # futures = []
-
-        # for i in range(n):
-        #     for j in range(i + 1, n):
-        #         future = aud_pearsonr.remote(self.factors[i], self.factors[j])
-        #         futures.append(future)
-        # df_corr = np.zeros((n, n), dtype=np.float32)
-        # results = ray.get(futures)
-        # for i in range(n):
-        #     for j in range(i + 1, n):
-        #         df_corr[i][j] = results[i + j]
-        #         df_corr[j][i] = results[i + j]
-        # self.df_corr = df_corr
+        sigs = self.factors
+        n = len(sigs)
+        df_corr = np.ones((n, n))
+        corrs = []
+        for i in range(n):
+            for j in range(i + 1, n):
+                ic = torch.nanmean(
+                    batch_pearsonr(
+                        sigs[i],
+                        sigs[j],
+                    )
+                )
+                df_corr[i, j] = ic
+                df_corr[j, i] = ic
+        return df_corr
 
     @timer
     def calc_ic(self):
