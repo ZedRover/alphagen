@@ -11,22 +11,30 @@ from torch import Tensor
 
 
 class QLibStockDataCalculator(AlphaCalculator):
-    def __init__(self, data: ArgData, device: torch.device = torch.device("cpu")):
+    def __init__(
+        self,
+        data: ArgData,
+        # trunk-ignore(ruff/B008)
+        device=torch.device("cpu"),
+        path_ret1d: str = "/home/public2/share_yw/data/basic_info/RET1D.npy",
+        path_ret2d: str = "/home/public2/share_yw/data/basic_info/RET2D.npy",
+        path_ret5d: str = "/home/public2/share_yw/data/basic_info/RET5D.npy",
+    ):
         self.data = data
         self.device = device
 
         real_start_idx = data.start_idx + data.max_backtrack_days
         real_end_idx = data.end_idx - data.max_future_days
 
-        self.ret1d = np.load(
-            "/home/public2/share_yw/data/basic_info/RET1D.npy"
-        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
-        self.ret2d = np.load(
-            "/home/public2/share_yw/data/basic_info/RET2D.npy"
-        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
-        self.ret5d = np.load(
-            "/home/public2/share_yw/data/basic_info/RET5D.npy"
-        ).reshape(-1, N_PROD)[real_start_idx:real_end_idx]
+        self.ret1d = np.load(path_ret1d).reshape(-1, N_PROD)[
+            real_start_idx:real_end_idx
+        ]
+        self.ret2d = np.load(path_ret2d).reshape(-1, N_PROD)[
+            real_start_idx:real_end_idx
+        ]
+        self.ret5d = np.load(path_ret5d).reshape(-1, N_PROD)[
+            real_start_idx:real_end_idx
+        ]
         self.ret1d = torch.from_numpy(self.ret1d).to(device)
         self.ret2d = torch.from_numpy(self.ret2d).to(device)
         self.ret5d = torch.from_numpy(self.ret5d).to(device)
