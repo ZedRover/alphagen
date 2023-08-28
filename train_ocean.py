@@ -126,7 +126,7 @@ def main(
     )
     data_valid = ArgData(
         start_time=20210101,
-        end_time=20210601,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     data_test = ArgData(

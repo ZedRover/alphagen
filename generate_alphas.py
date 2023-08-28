@@ -21,11 +21,16 @@ sigs_dir = [
 ]
 
 
+sigs_dict = {}
+#  use dict comprehension to get result of ProcessPoolExecutor
 with ProcessPoolExecutor(160) as executor:
-    sigs_value = executor.map(
-        json_to_factor,
-        sigs_dir,
-        [20210101] * len(sigs_name),
-        [20211231] * len(sigs_name),
-    )
-    sigs_value = list(sigs_value)
+    for name, value in zip(
+        sigs_name,
+        executor.map(
+            json_to_factor,
+            sigs_dir,
+            [20210101] * len(sigs_name),
+            [20211231] * len(sigs_name),
+        ),
+    ):
+        sigs_dict[name] = value

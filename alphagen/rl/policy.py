@@ -23,9 +23,9 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("_pe", pe)
 
     def forward(self, x: Tensor) -> Tensor:
+        # trunk-ignore(ruff/D415)
         """
-        x: ([batch_size, ]seq_len, embedding_dim)
-
+        x: ([batch_size, ]seq_len, embedding_dim)..
         """
         seq_len = x.size(0) if x.dim() == 2 else x.size(1)
         return x + self._pe[:seq_len]  # type: ignore

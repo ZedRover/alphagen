@@ -324,6 +324,7 @@ class Backtester(object):
                 )
                 df_corr[i, j] = ic
                 df_corr[j, i] = ic
+        self.df_corr = df_corr
         return df_corr
 
     @timer
