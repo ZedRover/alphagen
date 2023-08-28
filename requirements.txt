@@ -3,3 +3,4 @@ matplotlib==3.3.4
 sb3_contrib==1.8.0
 stable_baselines3==1.8.0
 torch==2.0.1
+ray

@@ -47,7 +47,7 @@ def timer(func):
     return wrapper
 
 
-@timer
+# @timer
 def batch_spearmanr(x: Tensor, y: Tensor) -> Tensor:
     x, y, n, nan_mask = _mask_either_nan(x, y)
     rx = _rank_data(x, nan_mask)
