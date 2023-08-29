@@ -27,7 +27,7 @@ class ArgData:
         start_time: int = 20190103,
         end_time: int = 20190605,
         max_backtrack_days: int = 100,
-        max_future_days: int = 30,
+        max_future_days: int = 0,
         features: Optional[List[FeatureType]] = None,
         device: torch.device = torch.device("cpu"),
     ) -> None:

@@ -103,7 +103,7 @@ class Feature(Expression):
             or period.stop - 1 > data.max_future_days
         ):
             raise OutOfDataRangeError()
-        start = period.start + data.max_backtrack_days
+        start = period.start + data.max_abcktrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
         # n_feat = int(self._feature.value)
         # return torch.from_numpy(data.data[start:stop, n_feat, :])

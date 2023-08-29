@@ -1,1 +1,26 @@
-{"exprs": ["$qintra_spreadavgmidp11", "$qcne5d_spec_ret", "$qopen_moneyflow_pct_value_l", "$qintra_abv_5_mean", "Cov(Mean(CrsDeMean($qintra_deltasell_5_mean),10),$qret1,50)", "CrsAbs($qs_dq_freeturnover)", "Add($qsize,$qmoneyflow_pct_value)", "$qs_dq_turn", "$qnet_inflow_rate_value", "BiasCrsRank($qintra_abv_5_mean)"], "weights": [-0.018054764539491702, -0.03159481571698933, 0.013477884721382834, -0.0015889298363872993, 0.011904746192724266, -0.018964359256404377, -0.011806177500318293, -0.023468383397761555, 0.016453603345362375, -0.012918997888817927]}
+{
+    "exprs": [
+        "$qintra_spreadavgmidp11",
+        "$qcne5d_spec_ret",
+        "$qopen_moneyflow_pct_value_l",
+        "$qintra_abv_5_mean",
+        "Cov(Mean(CrsDeMean($qintra_deltasell_5_mean),10),$qret1,50)",
+        "CrsAbs($qs_dq_freeturnover)",
+        "Add($qsize,$qmoneyflow_pct_value)",
+        "$qs_dq_turn",
+        "$qnet_inflow_rate_value",
+        "BiasCrsRank($qintra_abv_5_mean)"
+    ],
+    "weights": [
+        -0.018054764539491702,
+        -0.03159481571698933,
+        0.013477884721382834,
+        -0.0015889298363872993,
+        0.011904746192724266,
+        -0.018964359256404377,
+        -0.011806177500318293,
+        -0.023468383397761555,
+        0.016453603345362375,
+        -0.012918997888817927
+    ]
+}
