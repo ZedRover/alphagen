@@ -8,6 +8,7 @@ from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr, pool_pea
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.stock_data import N_PROD, ArgData
 from torch import Tensor
+from alphagen.dir_config import DIR_RETS
 
 
 class QLibStockDataCalculator(AlphaCalculator):
@@ -16,9 +17,6 @@ class QLibStockDataCalculator(AlphaCalculator):
         data: ArgData,
         # trunk-ignore(ruff/B008)
         device=torch.device("cpu"),
-        path_ret1d: str = "/home/public2/share_yw/data/basic_info/RET1D.npy",
-        path_ret2d: str = "/home/public2/share_yw/data/basic_info/RET2D.npy",
-        path_ret5d: str = "/home/public2/share_yw/data/basic_info/RET5D.npy",
     ):
         self.data = data
         self.device = device
@@ -26,13 +24,13 @@ class QLibStockDataCalculator(AlphaCalculator):
         real_start_idx = data.start_idx + data.max_backtrack_days
         real_end_idx = data.end_idx - data.max_future_days
 
-        self.ret1d = np.load(path_ret1d).reshape(-1, N_PROD)[
+        self.ret1d = np.load(DIR_RETS[0]).reshape(-1, N_PROD)[
             real_start_idx:real_end_idx
         ]
-        self.ret2d = np.load(path_ret2d).reshape(-1, N_PROD)[
+        self.ret2d = np.load(DIR_RETS[1]).reshape(-1, N_PROD)[
             real_start_idx:real_end_idx
         ]
-        self.ret5d = np.load(path_ret5d).reshape(-1, N_PROD)[
+        self.ret5d = np.load(DIR_RETS[2]).reshape(-1, N_PROD)[
             real_start_idx:real_end_idx
         ]
         self.ret1d = torch.from_numpy(self.ret1d).to(device)

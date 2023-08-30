@@ -168,7 +168,7 @@ def json_to_factor(
         for expr in alpha["exprs"]
     ]
     weights = torch.tensor(alpha["weights"])
-    factor_value = sum(f * w for f, w in zip(factors, weights, strict=False))
+    factor_value = sum(f * w for f, w in zip(factors, weights))
     factor_value = normalize_by_day(factor_value)
 
     return factor_value
@@ -184,7 +184,7 @@ def calc_factors(data: ArgData, path: str):
         for expr in alpha["exprs"]
     ]
     weights = torch.tensor(alpha["weights"])
-    factor_value = sum(f * w for f, w in zip(factors, weights, strict=False))
+    factor_value = sum(f * w for f, w in zip(factors, weights))
     factor_value = normalize_by_day(factor_value)
     return factor_value
 
@@ -254,9 +254,7 @@ def remove_high_corr_factors(df_corr, threshold=0.8):
         factors = [f for f in factors if f not in removed_factors]
 
         high_corr_pairs = np.where(np.triu(df_corr[factors][:, factors], 1) > threshold)
-        high_corr_pairs = [
-            (factors[i], factors[j]) for i, j in zip(*high_corr_pairs, strict=False)
-        ]
+        high_corr_pairs = [(factors[i], factors[j]) for i, j in zip(*high_corr_pairs)]
 
     return factors
 

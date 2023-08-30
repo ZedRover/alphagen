@@ -1,10 +1,8 @@
 import numpy as np
 import torch as th
 from concurrent.futures import ProcessPoolExecutor
-
 from glob import glob
 from utils import *
-import ray
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -22,7 +20,7 @@ sigs_dir = [
 
 
 sigs_dict = {}
-with ProcessPoolExecutor(160) as executor:
+with ProcessPoolExecutor(80) as executor:
     for name, value in zip(
         sigs_name,
         executor.map(
@@ -31,6 +29,5 @@ with ProcessPoolExecutor(160) as executor:
             [20190103] * len(sigs_name),
             [20211231] * len(sigs_name),
         ),
-        strict=True,
     ):
         sigs_dict[name] = value

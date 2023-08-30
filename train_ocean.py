@@ -65,6 +65,7 @@ class CustomCallback(BaseCallback):
         return True
 
     def _on_rollout_end(self) -> None:
+        self.logger.record("timesteps", self.num_timesteps)
         self.logger.record("pool/size", self.pool.size)
         self.logger.record(
             "pool/significant",

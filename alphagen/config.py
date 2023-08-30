@@ -3,7 +3,7 @@ from alphagen.data.expression_ocean import *
 
 
 MAX_EXPR_LENGTH = 20
-MAX_EPISODE_LENGTH = 1024  # 256
+MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
     # Unary

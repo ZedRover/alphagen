@@ -7,6 +7,7 @@ import torch
 from .feature_list import FEATURES
 from enum import Enum
 import pandas_market_calendars as mcal
+from alphagen.dir_config import DIR_DATES
 
 N_PROD = 6000
 MULTI_TI = 16
@@ -31,7 +32,7 @@ class ArgData:
         features: Optional[List[FeatureType]] = None,
         device: torch.device = torch.device("cpu"),
     ) -> None:
-        self._instrument = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
+        # self._instrument = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.max_backtrack_days = max_backtrack_days
         self.max_future_days = max_future_days
         self._features = features if features is not None else list(FeatureType)
@@ -39,13 +40,13 @@ class ArgData:
         self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
         self.data, self._dates, self._stock_ids = self._get_data()
 
-    def _get_data(self) -> Tuple[None, np.ndarray, np.ndarray]:
-        dates = np.load("/home/public2/share_yw/data/basic_info/Dates.npy")
-        stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
+    def _get_data(self) -> Tuple[None, np.ndarray, None]:
+        dates = np.load(DIR_DATES)
+        # stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = np.where(dates == self._end_time)[0][0] * MULTI_TI
 
-        return None, dates, stock_ids
+        return None, dates, None
 
     @property
     def n_features(self) -> int:
