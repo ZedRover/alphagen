@@ -1,0 +1,55 @@
+
+num of factors:217
+num of factors:217
+calc_factor took 500 seconds
+calc_factor took 299 seconds
+calc_ic took 919 seconds
+calc_ic took 310 seconds
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/home/ray/anaconda3/envs/ag/lib/python3.11/linecache.py", line 46, in getlines
+    return updatecache(filename, module_globals)Traceback (most recent call last):
+  File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/resource_sharer.py", line 138, in _serve
+    with self._listener.accept() as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 464, in accept
+    deliver_challenge(c, self._authkey)
+    File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 737, in deliver_challenge
+    connection.send_bytes(CHALLENGE + message)
+    File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 199, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+    File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 410, in _send_bytes
+    self._send(header + buf)
+    File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 367, in _send
+    n = write(self._handle, buf)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+ ^BrokenPipeError: [Errno 32] Broken pipe
+^^^^Traceback (most recent call last):
+^^  File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/resource_sharer.py", line 138, in _serve
+^^^^^    ^with self._listener.accept() as conn:^
+^^ ^ ^ ^ ^ ^ ^ ^ ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^  File "/home/ray/anaconda3/envs/ag/lib/python3.11/linecache.py", line 137, in updatecache
+^^^^^    ^lines = fp.readlines()
+      File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 464, in accept
+        ^^^^    ^deliver_challenge(c, self._authkey)^^
+^^^  File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 737, in deliver_challenge
+^^^^
+  File "<frozen codecs>", line 319, in decode
+    KeyboardInterruptconnection.send_bytes(CHALLENGE + message)
+  File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 199, in send_bytes
+Original exception was:
+Traceback (most recent call last):
+    self._send_bytes(m[offset:offset + size])  File "/home/ray/workspace/alphagen/run_backtest.py", line 54, in calc_sig_corr
+  File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 410, in _send_bytes
+    ic = future.result()
+     self._send(header + buf)
+     File "/home/ray/anaconda3/envs/ag/lib/python3.11/multiprocessing/connection.py", line 367, in _send
+   ^    ^n = write(self._handle, buf)^^
+^^ ^ ^ ^ ^ ^ ^ ^ ^^^^^
+^^^  File "/home/ray/anaconda3/envs/ag/lib/python3.11/concurrent/futures/_base.py", line 451, in result
+^^^^^    ^self._condition.wait(timeout)^^
+^^^  File "/home/ray/anaconda3/envs/ag/lib/python3.11/threading.py", line 320, in wait
+^^^^^^^
+waiter.acquire()BrokenPipeError
+: [Errno 32] Broken pipeKeyboardInterrupt
+Exception ignored in sys.unraisablehook: <built-in function unraisablehook>

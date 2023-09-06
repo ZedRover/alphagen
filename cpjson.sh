@@ -1,16 +1,32 @@
 #!/bin/bash
 
-# 源目录
-src_dir="./checkpoints/"
+# 源目录，包含你要复制的文件和文件夹
+SOURCE_DIR="./checkpoints"
 
-# 目标目录
-dest_dir="/home/public2/share_yw/checkpoints"
+# 目标目录，你要复制到哪里
+DEST_DIR="/home/public2/share_yw/mycheckpoints"
 
-# 创建目标目录，如果它不存在
-mkdir -p "$dest_dir"
+# 检查源目录是否存在
+if [ ! -d "$SOURCE_DIR" ]; then
+	echo "源目录 $SOURCE_DIR 不存在."
+	exit 1
+fi
 
-# 使用 rsync 来复制 .json 文件，并保持目录结构
-rsync -avm --include='*.json' -f 'hide,! */' "$src_dir" "$dest_dir"
+# 创建目标目录如果它不存在
+mkdir -p "$DEST_DIR"
 
-echo "All .json files from $src_dir have been copied to $dest_dir, preserving the directory structure."
+# 开始复制操作
+find "$SOURCE_DIR" -type d -o -name "*.json" | while read -r src_file; do
+	# 创建目标文件/目录的路径
+	dest_file="${src_file/#$SOURCE_DIR/$DEST_DIR}"
 
+	# 如果是目录，则创建目录
+	if [ -d "$src_file" ]; then
+		mkdir -p "$dest_file"
+	else
+		# 如果是文件，则复制文件
+		cp "$src_file" "$dest_file"
+	fi
+done
+
+echo "复制完成."

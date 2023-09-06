@@ -8,6 +8,7 @@ from typing import Optional
 import numpy as np
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from alphagen.config import *
 from alphagen.data.calculator import AlphaCalculator
@@ -174,7 +175,15 @@ def main(
         l1_alpha=5e-3,
         device=DEVICE_MODEL,
     )
-    env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
+
+    num_envs = 4
+
+    def make_alpha_env():
+        return AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
+
+    envs = [make_alpha_env for _ in range(num_envs)]
+    # vec_env = DummyVecEnv(envs)
+    vec_env = SubprocVecEnv(envs)
 
     name_prefix = f"{instruments}_{pool_capacity}_{str(seed).zfill(4)}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -192,7 +201,7 @@ def main(
 
     model = MaskablePPO(
         "MlpPolicy",
-        env,
+        vec_env,
         policy_kwargs=dict(
             features_extractor_class=LSTMSharedNet,
             features_extractor_kwargs=dict(
