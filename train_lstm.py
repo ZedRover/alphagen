@@ -95,11 +95,13 @@ class CustomCallback(BaseCallback):
         )
         self.logger.record("pool/best_ic_ret", self.pool.best_ic_ret)
         self.logger.record("pool/eval_cnt", self.pool.eval_cnt)
-        ic_test, pic_test = self.pool.test_ensemble(self.test_calculator)
+        ic_test, pic_test = self.pool.test_ensemble(self.valid_calculator)
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/pool_ic", pic_test)
         self.save_checkpoint()
         self._continue = self.earlystop.add(ic_test)
+        if not self._continue:
+            print("Early stop!".center(60, "-"))
 
     def save_checkpoint(self):
         path = os.path.join(
@@ -149,12 +151,12 @@ def main(
     )
     data_valid = ArgData(
         start_time=20210101,
-        end_time=20210630,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     data_test = ArgData(
         start_time=20210101,
-        end_time=20210630,
+        end_time=20211231,
         device=DEVICE_DATA,
     )
     print("train days:", data_train.n_days)
@@ -188,11 +190,25 @@ def main(
         verbose=1,
     )
 
-    ckpt_path = (
-        "checkpoints/20230830130954_satd_lexpr20_lopt50_10_7899/241664_steps.zip"
+    model = MaskablePPO(
+        "MlpPolicy",
+        env,
+        policy_kwargs=dict(
+            features_extractor_class=LSTMSharedNet,
+            features_extractor_kwargs=dict(
+                n_layers=2,
+                d_model=256,  # init 128
+                dropout=0.1,
+                device=DEVICE_MODEL,
+            ),
+        ),
+        gamma=1.0,
+        ent_coef=0.1,  # NOTE 1e-2
+        batch_size=1024,  # 512
+        tensorboard_log="./log",
+        device=DEVICE_MODEL,
+        verbose=1,
     )
-    model = MaskablePPO.load(ckpt_path, map_location=DEVICE_MODEL)
-    model.set_env(env)
     model.learn(
         total_timesteps=steps,
         callback=checkpoint_callback,

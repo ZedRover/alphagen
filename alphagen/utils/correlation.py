@@ -1,8 +1,8 @@
 import torch
+from audtorch.metrics.functional import pearsonr
 from torch import Tensor
 
 from alphagen.utils.pytorch_utils import masked_mean_std
-from audtorch.metrics.functional import pearsonr
 
 
 def _mask_either_nan(x: Tensor, y: Tensor, fill_with: float = torch.nan):
@@ -60,9 +60,10 @@ def batch_pearsonr(x: Tensor, y: Tensor) -> Tensor:
     return _batch_pearsonr_given_mask(*_mask_either_nan(x, y, fill_with=0.0))
 
 
+# @timer
 def pool_pearsonr(signal: Tensor, target: Tensor) -> Tensor:
     signal = signal.reshape(-1, 1)
     target = target.reshape(-1, 1)
-    nan_mask = torch.isinf(target) & torch.isnan(signal)
+    nan_mask = ~(torch.isinf(target) | torch.isnan(signal))
     signal, target = signal[nan_mask], target[nan_mask]
     return pearsonr(signal, target, batch_first=False)

@@ -2,12 +2,11 @@ import math
 
 import gym
 import gym.spaces
-
-# trunk-ignore(ruff/N812)
 import torch.nn.functional as F
-from alphagen.data.expression import *
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from torch import nn
+
+from alphagen.data.expression import *
 
 
 class PositionalEncoding(nn.Module):
@@ -23,7 +22,6 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("_pe", pe)
 
     def forward(self, x: Tensor) -> Tensor:
-        # trunk-ignore(ruff/D415)
         """
         x: ([batch_size, ]seq_len, embedding_dim)..
         """
@@ -46,8 +44,7 @@ class TransformerSharedNet(BaseFeaturesExtractor):
 
         if not isinstance(observation_space, gym.spaces.Box):
             raise AssertionError()
-        n_actions = observation_space.high[0] + 1  # type: ignore
-
+        n_actions = observation_space.high[0] + 1
         self._device = device
         self._d_model = d_model
         self._n_actions: float = n_actions

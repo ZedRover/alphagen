@@ -1,5 +1,5 @@
 # Generic, formatter-friendly config.
-select = ["B", "D3", "D4", "E","N","S","NPY"]
+select = ["B", "D3", "D4", "E","S","NPY"]
 
 # Never enforce `E501` (line length violations). This should be handled by formatters.
-ignore = ["E501","F405"]
+ignore = ["E501","F405","B905"]

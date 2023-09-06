@@ -340,7 +340,7 @@ class Clipper(ShiftOperator):
         return fillnan(operand.clip(-bound, bound))
 
 
-OCOperators = [
+Operators_oc = [
     Square,
     Sqrt,
     CrsRank,

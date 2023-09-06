@@ -1,9 +1,9 @@
 import random
 
-import torch
-from train_ocean import *
-
 import ray
+import torch
+
+from train_lstm import *
 
 ray.init(num_cpus=160, num_gpus=4)
 

@@ -1,9 +1,9 @@
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
+from alphagen.data.expression_wq import *
 
-
-MAX_EXPR_LENGTH = 20
-MAX_EPISODE_LENGTH = 512  # 256
+MAX_EXPR_LENGTH = 9
+MAX_EPISODE_LENGTH = 256  # 256
 
 OPERATORS = [
     # Unary
@@ -37,9 +37,9 @@ OPERATORS = [
     Cov,
     Corr,
 ]
-OPERATORS += OCOperators
+OPERATORS += Operators_oc + Operators_wq
 
-DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60]
+DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60, 70, 80, 90, 99]
 
 CONSTANTS = [
     -30.0,

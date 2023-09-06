@@ -1,23 +1,24 @@
 import argparse as ap
-import os
-from typing import Optional
-from datetime import datetime
 import json
+import os
 import random
+from datetime import datetime
+from typing import Optional
+
 import numpy as np
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import BaseCallback
-from alphagen.data.calculator import AlphaCalculator
 
+from alphagen.config import *
+from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import *
 from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
-from alphagen.rl.env.wrapper import AlphaEnv
-from alphagen.rl.policy import LSTMSharedNet
-from alphagen.utils.random import reseed_everything
 from alphagen.rl.env.core import AlphaEnvCore
+from alphagen.rl.env.wrapper import AlphaEnv
+from alphagen.rl.policy import TransformerSharedNet
+from alphagen.utils.random import reseed_everything
 from alphagen_ocean.calculator import QLibStockDataCalculator
 from alphagen_ocean.stock_data import ArgData
-from alphagen.config import *
 
 args = ap.ArgumentParser()
 args.add_argument("--gpu", "-g", type=int, default=1)
@@ -31,6 +32,23 @@ DEVICE_DATA = torch.device("cpu")
 DEVICE_CALC = torch.device("cpu")
 
 
+class FixedSizeContainer:
+    def __init__(self, size=5):
+        self.container = [-1] * size
+        self.size = size
+
+    def add(self, element):
+        self.container.pop(0)
+        self.container.append(element)
+        return self.check_order()
+
+    def check_order(self):
+        for i in range(1, self.size):
+            if self.container[i] >= self.container[i - 1]:
+                return True
+        return False
+
+
 class CustomCallback(BaseCallback):
     def __init__(
         self,
@@ -42,6 +60,7 @@ class CustomCallback(BaseCallback):
         name_prefix: str = "rl_model",
         timestamp: Optional[str] = None,
         verbose: int = 0,
+        patience: int = 5,
     ):
         super().__init__(verbose)
         self.save_freq = save_freq
@@ -51,6 +70,9 @@ class CustomCallback(BaseCallback):
 
         self.valid_calculator = valid_calculator
         self.test_calculator = test_calculator
+
+        self.earlystop = FixedSizeContainer(size=patience)
+        self._continue = True
 
         if timestamp is None:
             self.timestamp = datetime.now().strftime("%Y%m%d%H%M")
@@ -62,7 +84,7 @@ class CustomCallback(BaseCallback):
             os.makedirs(self.save_path, exist_ok=True)
 
     def _on_step(self) -> bool:
-        return True
+        return self._continue
 
     def _on_rollout_end(self) -> None:
         self.logger.record("timesteps", self.num_timesteps)
@@ -73,10 +95,13 @@ class CustomCallback(BaseCallback):
         )
         self.logger.record("pool/best_ic_ret", self.pool.best_ic_ret)
         self.logger.record("pool/eval_cnt", self.pool.eval_cnt)
-        ic_test, pic_test = self.pool.test_ensemble(self.test_calculator)
+        ic_test, pic_test = self.pool.test_ensemble(self.valid_calculator)
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/pool_ic", pic_test)
         self.save_checkpoint()
+        self._continue = self.earlystop.add(ic_test)
+        if not self._continue:
+            print("Early stop!".center(60, "-"))
 
     def save_checkpoint(self):
         path = os.path.join(
@@ -101,7 +126,6 @@ class CustomCallback(BaseCallback):
             print(f"> Alpha #{i}: {weight}, {expr_str}, {ic_ret}")
         print(f'>> Ensemble ic_ret: {state["best_ic_ret"]}')
         print("---------------------------------------------")
-        metric = {"ics_ret": state["ics_ret"], "best_ic_ret": state["betst_ic_ret"]}
 
     @property
     def pool(self) -> AlphaPoolBase:
@@ -170,10 +194,12 @@ def main(
         "MlpPolicy",
         env,
         policy_kwargs=dict(
-            features_extractor_class=LSTMSharedNet,
+            features_extractor_class=TransformerSharedNet,
             features_extractor_kwargs=dict(
-                n_layers=2,
-                d_model=256,  # init 128
+                n_encoder_layers=2,
+                d_model=512,  # init 128
+                n_head=4,
+                d_ffn=512 * 2,
                 dropout=0.1,
                 device=DEVICE_MODEL,
             ),
@@ -195,7 +221,7 @@ def main(
 if __name__ == "__main__":
     main(
         seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
-        instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
+        instruments=f"{args.name}_attn_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         steps=250_000,
     )
