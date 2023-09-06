@@ -15,3 +15,4 @@ checkpoints/**
 !checkpoints/**/251904_steps_pool.json
 data_collection/data
 *.tar.gz
+wandb
