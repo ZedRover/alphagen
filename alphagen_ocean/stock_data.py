@@ -1,13 +1,15 @@
+from enum import Enum
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import pandas_market_calendars as mcal
 import SharedArray as sa
 import torch
-from .feature_list import FEATURES
-from enum import Enum
-import pandas_market_calendars as mcal
+
 from alphagen.dir_config import DIR_DATES
+
+from .feature_list import FEATURES
 
 N_PROD = 6000
 MULTI_TI = 16
@@ -45,7 +47,11 @@ class ArgData:
         # stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = np.where(dates == self._end_time)[0][0] * MULTI_TI
-
+        self.total_len = len(dates)
+        if self.end_idx + 1 >= self.total_len:
+            self.end_idx = -1
+        else:
+            self.end_idx = self.end_idx + 1
         return None, dates, None
 
     @property
