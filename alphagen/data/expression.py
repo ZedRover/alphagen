@@ -107,13 +107,13 @@ class Feature(Expression):
             raise OutOfDataRangeError()
         start = period.start + data.max_backtrack_days
         # stop = period.stop + data.max_backtrack_days + data.n_days - 1
-        stop = -1
+        # stop = -1
         # n_feat = int(self._feature.value)
         # return torch.from_numpy(data.data[start:stop, n_feat, :])
         return torch.from_numpy(
             sa.attach(self._feature.name).reshape(-1, N_PROD)[
                 data.start_idx : data.end_idx
-            ][start:stop]
+            ][start:]
         )  # NOTE: load feature
 
     def __str__(self) -> str:
