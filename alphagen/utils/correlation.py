@@ -64,6 +64,6 @@ def batch_pearsonr(x: Tensor, y: Tensor) -> Tensor:
 def pool_pearsonr(signal: Tensor, target: Tensor) -> Tensor:
     signal = signal.reshape(-1, 1)
     target = target.reshape(-1, 1)
-    nan_mask = ~(torch.isinf(target) | torch.isnan(signal))
+    nan_mask = torch.isinf(target) & torch.isinf(signal)
     signal, target = signal[nan_mask], target[nan_mask]
     return pearsonr(signal, target, batch_first=False)
