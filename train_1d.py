@@ -17,12 +17,12 @@ from alphagen.rl.env.core import AlphaEnvCore
 from alphagen.rl.env.wrapper import AlphaEnv
 from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
-from alphagen_ocean.calculator import QLibStockDataCalculator
+from alphagen_ocean.calculator_1d import Calculator1d
 from alphagen_ocean.stock_data import ArgData
 
 args = ap.ArgumentParser()
 args.add_argument("--gpu", "-g", type=int, default=1)
-args.add_argument("--name", "-n", type=str, default="satd")
+args.add_argument("--name", "-n", type=str, default="ret1d")
 args.add_argument("--kwargs", "-k", type=str, default="None")
 args = args.parse_args()
 
@@ -163,9 +163,9 @@ def main(
     print("  val days:", data_valid.n_days)
     print(" test days:", data_test.n_days)
 
-    calculator_train = QLibStockDataCalculator(data_train, device=DEVICE_CALC)
-    calculator_valid = QLibStockDataCalculator(data_valid, device=DEVICE_CALC)
-    calculator_test = QLibStockDataCalculator(data_test, device=DEVICE_CALC)
+    calculator_train = Calculator1d(data_train, device=DEVICE_CALC)
+    calculator_valid = Calculator1d(data_valid, device=DEVICE_CALC)
+    calculator_test = Calculator1d(data_test, device=DEVICE_CALC)
 
     pool = AlphaPool(
         capacity=pool_capacity,
@@ -221,5 +221,5 @@ if __name__ == "__main__":
         seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
         instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
-        steps=150_000,
+        steps=100_000,
     )

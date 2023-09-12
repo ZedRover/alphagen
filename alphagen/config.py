@@ -39,7 +39,8 @@ OPERATORS = [
 ]
 OPERATORS += Operators_oc + Operators_wq
 
-DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60, 70, 80, 90, 99]
+# DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60, 70, 80, 90, 99]
+DELTA_TIMES = np.arange(1, 20 * 16, step=5).tolist()
 
 CONSTANTS = [
     -30.0,
