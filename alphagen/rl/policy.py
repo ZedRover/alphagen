@@ -1,7 +1,6 @@
 import math
 
-import gym
-import gym.spaces
+import gymnasium as gym
 import torch.nn.functional as F
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from torch import nn

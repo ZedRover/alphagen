@@ -1,12 +1,13 @@
-from typing import Tuple, Optional
-import gym
 import math
+from typing import Optional, Tuple
+
+import gymnasium as gym
 
 from alphagen.config import MAX_EXPR_LENGTH
-from alphagen.data.tokens import *
 from alphagen.data.expression import *
+from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
-from alphagen.models.alpha_pool import AlphaPoolBase, AlphaPool
+from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
 from alphagen.utils import reseed_everything
 
 
@@ -29,6 +30,7 @@ class AlphaEnvCore(gym.Env):
         self._device = device
 
         self.eval_cnt = 0
+        self.render_mode = None
 
     def reset(
         self,
@@ -42,7 +44,7 @@ class AlphaEnvCore(gym.Env):
         self._builder = ExpressionBuilder()
         return self._tokens, self._valid_action_types()
 
-    def step(self, action: Token) -> Tuple[List[Token], float, bool, dict]:
+    def step(self, action: Token) -> Tuple[List[Token], float, bool, bool, dict]:
         # print(self.pool.to_dict()) # NOTE
         if (
             isinstance(action, SequenceIndicatorToken)
@@ -61,7 +63,7 @@ class AlphaEnvCore(gym.Env):
 
         if math.isnan(reward):
             reward = 0.0
-        return self._tokens, reward, done, self._valid_action_types()
+        return self._tokens, reward, done, False, self._valid_action_types()
 
     def _evaluate(self):
         expr: Expression = self._builder.get_tree()

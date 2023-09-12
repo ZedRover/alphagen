@@ -1,10 +1,11 @@
-import gym
-import gym.spaces
+from typing import Tuple
+
+import gymnasium as gym
 import numpy as np
 
 from alphagen.config import *
 from alphagen.data.tokens import *
-from alphagen.models.alpha_pool import AlphaPoolBase, AlphaPool
+from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
 from alphagen.rl.env.core import AlphaEnvCore
 
 SIZE_NULL = 1
@@ -59,19 +60,19 @@ class AlphaEnvWrapper(gym.Wrapper):
         )
         print(f"action-space:{self.action_space}\nobs-space:{self.observation_space}")
 
-    def reset(self, **kwargs) -> np.ndarray:
+    def reset(self, **kwargs) -> Tuple[np.ndarray, dict]:
         self.counter = 0
         self.state = np.zeros(MAX_EXPR_LENGTH, dtype=np.uint8)
         self.env.reset()
-        return self.state
+        return self.state, {}
 
     def step(self, action: int):
-        _, reward, done, info = self.env.step(self.action(action))
+        _, reward, done, truncated, info = self.env.step(self.action(action))
         if not done:
             self.state[self.counter] = action
             self.counter += 1
 
-        return self.state, self.reward(reward), done, info
+        return self.state, self.reward(reward), done, truncated, info
 
     def action(self, action: int) -> Token:
         return action2token(action)
