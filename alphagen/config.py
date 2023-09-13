@@ -3,7 +3,7 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.expression_wq import *
 
 MAX_EXPR_LENGTH = 9
-MAX_EPISODE_LENGTH = 256  # 256
+MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
     # Unary
@@ -40,7 +40,7 @@ OPERATORS = [
 OPERATORS += Operators_oc + Operators_wq
 
 # DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60, 70, 80, 90, 99]
-DELTA_TIMES = np.arange(1, 20 * 16, step=5).tolist()
+DELTA_TIMES = np.arange(1, 20 * 16, step=16).tolist()
 
 CONSTANTS = [
     -30.0,
@@ -60,3 +60,4 @@ CONSTANTS = [
 ]
 
 REWARD_PER_STEP = 0.0
+HORIZON_BACK = max(DELTA_TIMES) + 1

@@ -1,12 +1,13 @@
-import numpy as np
-import torch as th
 from concurrent.futures import ProcessPoolExecutor
 from glob import glob
-from utils import *
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+import torch as th
 
+from utils import *
 
 df_result = pd.read_csv("./result.csv", index_col=0)
 sigs_name = df_result.index.tolist()
@@ -17,8 +18,6 @@ sigs_dir = [
     )[-1]
     for name in sigs_name
 ]
-
-
 sigs_dict = {}
 with ProcessPoolExecutor(80) as executor:
     for name, value in zip(

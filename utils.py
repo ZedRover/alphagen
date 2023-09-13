@@ -1,23 +1,23 @@
-from concurrent.futures import ProcessPoolExecutor
 import json
 import time
+from concurrent.futures import ProcessPoolExecutor
+from glob import glob
 from typing import List, Union
-from alphagen.utils.correlation import batch_pearsonr
-from alphagen.utils.pytorch_utils import normalize_by_day
+
+import pandas as pd
+import ray
+import torch as th
+from audtorch.metrics.functional import pearsonr
+
 from alphagen.config import OPERATORS
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
-from alphagen_ocean.stock_data import FeatureType, ArgData
+from alphagen.utils.correlation import batch_pearsonr
+from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.calculator import QLibStockDataCalculator
-
-import torch as th
-import ray
-import pandas as pd
-
-from glob import glob
-from audtorch.metrics.functional import pearsonr
+from alphagen_ocean.stock_data import ArgData, FeatureType
 
 
 def tokenize_formula(formula: str) -> List[str]:
@@ -155,9 +155,12 @@ def json_to_factor(
     path: str,
     start_date: int = 20210101,
     end_date: int = 20210601,
+    **data_params,
 ):
     device = torch.device("cpu")
-    data_test = ArgData(start_time=start_date, end_time=end_date, device=device)
+    data_test = ArgData(
+        start_time=start_date, end_time=end_date, device=device, **data_params
+    )
 
     with open(path, "r") as f:
         alpha = json.load(f)
@@ -277,6 +280,7 @@ class Backtester(object):
         start_time: int = 20190103,
         end_time: int = 20190605,
         pattern: str = "./checkpoints/*sat*/",
+        **data_param,
     ) -> None:
         self.start_time = start_time
         self.end_time = end_time
@@ -289,7 +293,7 @@ class Backtester(object):
         ]
         print(f"num of factors:{len(self.json_paths)}")
         self.data_test = ArgData(self.start_time, self.end_time)
-        self.calter = QLibStockDataCalculator(self.data_test)
+        self.calter = QLibStockDataCalculator(self.data_test, **data_param)
         self.factor_names = [path.split("/")[-2] for path in self.json_paths]
 
     @timer

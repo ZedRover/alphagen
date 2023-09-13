@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import List
 
 import numpy as np
@@ -29,15 +30,19 @@ class Calculator1d(AlphaCalculator):
         ]
         self.ret1d = torch.from_numpy(self.ret1d).to(device)
 
+    @lru_cache(maxsize=30)
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))
 
+    @lru_cache(maxsize=30)
     def _calc_IC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_pearsonr(value1, value2).mean().item()
 
+    @lru_cache(maxsize=30)
     def _calc_pIC(self, signal: Tensor, target: Tensor) -> float:
         return pool_pearsonr(signal, target).item()
 
+    @lru_cache(maxsize=30)
     def _calc_rIC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_spearmanr(value1, value2).mean().item()
 
@@ -50,12 +55,14 @@ class Calculator1d(AlphaCalculator):
         ]
         return sum(factors)  # type: ignore
 
+    @lru_cache(maxsize=30)
     def calc_single_IC_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
 
         ic_1d = self._calc_IC(value, self.ret1d)
         return ic_1d
 
+    @lru_cache(maxsize=30)
     def calc_mutual_IC(self, expr1: Expression, expr2: Expression) -> float:
         value1, value2 = self._calc_alpha(expr1), self._calc_alpha(expr2)
         return self._calc_IC(value1, value2)

@@ -44,7 +44,6 @@ class ArgData:
 
     def _get_data(self) -> Tuple[None, np.ndarray, None]:
         dates = np.load(DIR_DATES)
-        # stock_ids = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = (np.where(dates == self._end_time)[0][0] + 1) * MULTI_TI
         self.total_len = len(dates)
