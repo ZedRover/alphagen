@@ -331,9 +331,9 @@ class Backtester(object):
 
     @timer
     def calc_ic(self):
-        y1 = self.calter.ret1d
-        y2 = self.calter.ret2d
-        y5 = self.calter.ret5d
+        y1 = self.calter.raw_ret1d
+        y2 = self.calter.raw_ret2d
+        y5 = self.calter.raw_ret5d
         futures = []
         for y in self.factors:
             futures.append(remote_batch_pearsonr.remote(y, y1))

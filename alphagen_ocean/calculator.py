@@ -2,13 +2,14 @@ from typing import List
 
 import numpy as np
 import torch
+from torch import Tensor
+
 from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
+from alphagen.dir_config import DIR_RETS
 from alphagen.utils.correlation import batch_pearsonr, batch_spearmanr, pool_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.stock_data import N_PROD, ArgData
-from torch import Tensor
-from alphagen.dir_config import DIR_RETS
 
 
 class QLibStockDataCalculator(AlphaCalculator):
@@ -24,18 +25,18 @@ class QLibStockDataCalculator(AlphaCalculator):
         real_start_idx = data.start_idx + data.max_backtrack_days
         real_end_idx = data.end_idx - data.max_future_days
 
-        self.ret1d = np.load(DIR_RETS[0]).reshape(-1, N_PROD)[
+        self.raw_ret1d = np.load(DIR_RETS[0]).reshape(-1, N_PROD)
+        self.raw_ret2d = np.load(DIR_RETS[1]).reshape(-1, N_PROD)
+        self.raw_ret5d = np.load(DIR_RETS[2]).reshape(-1, N_PROD)
+        self.raw_ret1d = torch.from_numpy(self.raw_ret1d).to(device)[
             real_start_idx:real_end_idx
         ]
-        self.ret2d = np.load(DIR_RETS[1]).reshape(-1, N_PROD)[
+        self.raw_ret2d = torch.from_numpy(self.raw_ret2d).to(device)[
             real_start_idx:real_end_idx
         ]
-        self.ret5d = np.load(DIR_RETS[2]).reshape(-1, N_PROD)[
+        self.raw_ret5d = torch.from_numpy(self.raw_ret5d).to(device)[
             real_start_idx:real_end_idx
         ]
-        self.ret1d = torch.from_numpy(self.ret1d).to(device)
-        self.ret2d = torch.from_numpy(self.ret2d).to(device)
-        self.ret5d = torch.from_numpy(self.ret5d).to(device)
 
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))
@@ -61,9 +62,9 @@ class QLibStockDataCalculator(AlphaCalculator):
     def calc_single_IC_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
 
-        ic1 = self._calc_IC(value, self.ret1d)
-        ic2 = self._calc_IC(value, self.ret2d)
-        ic3 = self._calc_IC(value, self.ret5d)
+        ic1 = self._calc_IC(value, self.raw_ret1d)
+        ic2 = self._calc_IC(value, self.raw_ret2d)
+        ic3 = self._calc_IC(value, self.raw_ret5d)
         return (ic1 + ic2 + ic3) / 3
 
     def calc_mutual_IC(self, expr1: Expression, expr2: Expression) -> float:
@@ -73,26 +74,26 @@ class QLibStockDataCalculator(AlphaCalculator):
     def calc_pool_IC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
-            ic = batch_pearsonr(ensemble_value, self.ret1d).mean().item()
-            ic += batch_pearsonr(ensemble_value, self.ret2d).mean().item()
-            ic += batch_pearsonr(ensemble_value, self.ret5d).mean().item()
+            ic = batch_pearsonr(ensemble_value, self.raw_ret1d).mean().item()
+            ic += batch_pearsonr(ensemble_value, self.raw_ret2d).mean().item()
+            ic += batch_pearsonr(ensemble_value, self.raw_ret5d).mean().item()
             ic /= 3
             return ic
 
     def calc_pool_pIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
-            pic = pool_pearsonr(ensemble_value, self.ret1d).item()
-            pic += pool_pearsonr(ensemble_value, self.ret2d).item()
-            pic += pool_pearsonr(ensemble_value, self.ret5d).item()
+            pic = pool_pearsonr(ensemble_value, self.raw_ret1d).item()
+            pic += pool_pearsonr(ensemble_value, self.raw_ret2d).item()
+            pic += pool_pearsonr(ensemble_value, self.raw_ret5d).item()
             return pic / 3
 
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             ensemble_value = self._make_ensemble_alpha(exprs, weights)
-            rank_ic = batch_spearmanr(ensemble_value, self.ret1d).mean().item()
-            rank_ic += batch_spearmanr(ensemble_value, self.ret2d).mean().item()
-            rank_ic += batch_spearmanr(ensemble_value, self.ret5d).mean().item()
+            rank_ic = batch_spearmanr(ensemble_value, self.raw_ret1d).mean().item()
+            rank_ic += batch_spearmanr(ensemble_value, self.raw_ret2d).mean().item()
+            rank_ic += batch_spearmanr(ensemble_value, self.raw_ret5d).mean().item()
             rank_ic /= 3
             return rank_ic
 
@@ -106,4 +107,4 @@ class QLibStockDataCalculator(AlphaCalculator):
 
     def calc_q90_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
-        return self._calc_q90(value, self.ret1d)
+        return self._calc_q90(value, self.raw_ret1d)

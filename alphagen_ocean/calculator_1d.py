@@ -24,10 +24,8 @@ class Calculator1d(AlphaCalculator):
 
         real_start_idx = data.start_idx + data.max_backtrack_days
         real_end_idx = data.end_idx - data.max_future_days
-
-        self.ret1d = np.load(DIR_RETS[0]).reshape(-1, N_PROD)[
-            real_start_idx:real_end_idx
-        ]
+        self.raw_ret1d = np.load(DIR_RETS[0]).reshape(-1, N_PROD)
+        self.ret1d = self.raw_ret1d[real_start_idx:real_end_idx]
         self.ret1d = torch.from_numpy(self.ret1d).to(device)
 
     @lru_cache(maxsize=30)

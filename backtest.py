@@ -3,6 +3,8 @@ import json
 
 import numpy as np
 import torch
+from rich.pretty import pprint
+
 from alphagen.config import *
 from alphagen.data.expression import *
 from alphagen.data.tokens import *
@@ -11,7 +13,6 @@ from alphagen.utils.correlation import batch_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.calculator import QLibStockDataCalculator
 from alphagen_ocean.stock_data import ArgData
-from rich.pretty import pprint
 from utils import formula_to_expression
 
 parser = argparse.ArgumentParser()
@@ -77,9 +78,9 @@ def batch_topk(yhat, y):
 
 
 yhat = normalize_by_day(factor_value).to(cuda)
-y1d = cal_test.ret1d.to(cuda)
-y2d = cal_test.ret2d.to(cuda)
-y5d = cal_test.ret5d.to(cuda)
+y1d = cal_test.raw_ret1d.to(cuda)
+y2d = cal_test.raw_ret2d.to(cuda)
+y5d = cal_test.raw_ret5d.to(cuda)
 
 metric = {}
 rets = ["ret1d", "ret2d", "ret5d"]

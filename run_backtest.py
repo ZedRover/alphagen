@@ -102,9 +102,9 @@ finaldf.describe()
 
 # %%
 fs = ic_filter_sigs
-y1d = otsmp.calter.ret1d
-y2d = otsmp.calter.ret2d
-y5d = otsmp.calter.ret5d
+y1d = otsmp.calter.raw_ret1d
+y2d = otsmp.calter.raw_ret2d
+y5d = otsmp.calter.raw_ret5d
 
 # %%
 finaldf
