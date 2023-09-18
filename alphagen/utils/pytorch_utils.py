@@ -1,6 +1,7 @@
-from typing import Tuple, Optional, Union
+from typing import Optional, Tuple, Union
+
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 Tensor = Union[torch.Tensor]
 
@@ -19,12 +20,17 @@ def masked_mean_std(
     if n is None:
         n = (~mask).sum(dim=1)
 
-    masked_x = torch.where(mask, torch.zeros_like(x), x)
+    # Precompute zeros_like(x) to avoid multiple computations
+    zeros = torch.zeros_like(x)
+
+    # Use precomputed zeros
+    masked_x = torch.where(mask, zeros, x)
     mean = masked_x.sum(dim=1) / n
 
-    variance = (
-        torch.where(mask, torch.zeros_like(x), (x - mean.unsqueeze(-1)) ** 2).sum(dim=1)
-    ) / n
+    # Compute the variance using precomputed zeros and mean
+    variance = torch.where(mask, zeros, (x - mean.unsqueeze(-1)) ** 2).sum(dim=1) / n
+
+    # Compute standard deviation
     std = torch.sqrt(variance)
 
     return mean, std
@@ -33,7 +39,8 @@ def masked_mean_std(
 def normalize_by_day(value: Tensor) -> Tensor:
     mean, std = masked_mean_std(value)
     value.sub_(mean[:, None]).div_(std[:, None])
-    value = torch.where(torch.isnan(value), torch.zeros_like(value), value)
+    nan_mask = torch.isnan(value)
+    value.masked_fill_(nan_mask, 0.0)
     return value
 
 

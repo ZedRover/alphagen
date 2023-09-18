@@ -1,13 +1,13 @@
-from itertools import count
 import math
-from typing import List, Optional, Tuple, Set
 from abc import ABCMeta, abstractmethod
+from itertools import count
+from typing import List, Optional, Set, Tuple
 
 import numpy as np
 import torch
 from torch import Tensor
-from alphagen.data.calculator import AlphaCalculator
 
+from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import Expression
 
 

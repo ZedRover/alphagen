@@ -77,10 +77,11 @@ class CustomCallback(BaseCallback):
         ic_test, pic_test = self.pool.test_ensemble(self.valid_calculator)
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/pool_ic", pic_test)
-        self.save_checkpoint()
         self._continue = self.earlystop.add(ic_test)
         if not self._continue:
             print("Early stop!".center(60, "-"))
+        else:
+            self.save_checkpoint()
         print(f"{self.timestamp}".center(60, "-"))
 
     def save_checkpoint(self):

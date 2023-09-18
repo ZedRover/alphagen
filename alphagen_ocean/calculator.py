@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import List
 
 import numpy as np
@@ -38,15 +39,19 @@ class QLibStockDataCalculator(AlphaCalculator):
             real_start_idx:real_end_idx
         ]
 
+    @lru_cache(maxsize=50)
     def _calc_alpha(self, expr: Expression) -> Tensor:
         return normalize_by_day(expr.evaluate(self.data))
 
+    @lru_cache(maxsize=50)
     def _calc_IC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_pearsonr(value1, value2).mean().item()
 
+    @lru_cache(maxsize=50)
     def _calc_pIC(self, signal: Tensor, target: Tensor) -> float:
         return pool_pearsonr(signal, target).item()
 
+    @lru_cache(maxsize=50)
     def _calc_rIC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_spearmanr(value1, value2).mean().item()
 
@@ -59,6 +64,7 @@ class QLibStockDataCalculator(AlphaCalculator):
         ]
         return sum(factors)  # type: ignore
 
+    @lru_cache(maxsize=50)
     def calc_single_IC_ret(self, expr: Expression) -> float:
         value = self._calc_alpha(expr)
 
@@ -67,6 +73,7 @@ class QLibStockDataCalculator(AlphaCalculator):
         ic3 = self._calc_IC(value, self.raw_ret5d)
         return (ic1 + ic2 + ic3) / 3
 
+    @lru_cache(maxsize=50)
     def calc_mutual_IC(self, expr1: Expression, expr2: Expression) -> float:
         value1, value2 = self._calc_alpha(expr1), self._calc_alpha(expr2)
         return self._calc_IC(value1, value2)
@@ -96,8 +103,6 @@ class QLibStockDataCalculator(AlphaCalculator):
             rank_ic += batch_spearmanr(ensemble_value, self.raw_ret5d).mean().item()
             rank_ic /= 3
             return rank_ic
-
-    ################################# TODO ################################
 
     def _calc_q90(self, value: Tensor, target: Tensor) -> float:
         top_10_percent_idx = int(0.1 * len(value))

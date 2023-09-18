@@ -151,29 +151,24 @@ def batch_topk(yhat, y):
     return round(q90, 5), round(q99, 5)
 
 
-def json_to_factor(
-    path: str,
-    start_date: int = 20210101,
-    end_date: int = 20210601,
-    **data_params,
-):
-    device = torch.device("cpu")
-    data_test = ArgData(
-        start_time=start_date, end_time=end_date, device=device, **data_params
+def json_to_factor(path):
+    data = ArgData(
+        start_time=20190103,
+        end_time=20211231,
+        device=torch.device("cpu"),
+        max_backtrack_days=HORIZON_BACK,
     )
-
     with open(path, "r") as f:
         alpha = json.load(f)
     factors = [
-        Feature(getattr(FeatureType, expr[1:])).evaluate(data_test)
+        Feature(getattr(FeatureType, expr[1:])).evaluate(data)
         if expr[0] == "$"
-        else formula_to_expression(expr).evaluate(data_test)
+        else formula_to_expression(expr).evaluate(data)
         for expr in alpha["exprs"]
     ]
     weights = torch.tensor(alpha["weights"])
     factor_value = sum(f * w for f, w in zip(factors, weights))
     factor_value = normalize_by_day(factor_value)
-
     return factor_value
 
 
