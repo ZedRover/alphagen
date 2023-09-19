@@ -43,12 +43,12 @@ def main(
 
     data_train = ArgData(
         start_time=20190103,
-        end_time=20201231,
+        end_time=20200106,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
     )
     data_valid = ArgData(
-        start_time=20200101,
+        start_time=20200106,
         end_time=20201231,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
@@ -71,7 +71,8 @@ def main(
         capacity=pool_capacity,
         calculator=calculator_train,
         ic_lower_bound=None,
-        l1_alpha=5e-3,
+        # l1_alpha=5e-3,
+        l1_alpha=0,
         device=DEVICE_MODEL,
     )
     env = AlphaEnv(pool=pool, device=DEVICE_MODEL, print_expr=True)
@@ -88,10 +89,11 @@ def main(
         name_prefix=name_prefix,
         timestamp=timestamp,
         verbose=1,
+        patience=2,
     )
 
     ckpt_path = (
-        "checkpoints/20230918103759_ret1d_lexpr09_lopt58_10_3321/51200_steps.zip"
+        "checkpoints/20230919130850_ret1d_lexpr15_lopt58_10_8518/73728_steps.zip"
     )
     model = MaskablePPO.load(ckpt_path, map_location=DEVICE_MODEL)
     model.set_env(env)
@@ -106,6 +108,6 @@ if __name__ == "__main__":
     main(
         seed=random.randint(0, 9999),  # trunk-ignore(ruff/S311)
         instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
-        pool_capacity=10,
-        steps=80_000,
+        pool_capacity=15,
+        steps=60_000,
     )

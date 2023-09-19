@@ -2,7 +2,7 @@ from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.expression_wq import *
 
-MAX_EXPR_LENGTH = 9
+MAX_EXPR_LENGTH = 15
 MAX_EPISODE_LENGTH = 512  # 256
 
 OPERATORS = [
