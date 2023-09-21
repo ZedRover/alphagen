@@ -9,7 +9,7 @@ import ray
 import torch as th
 from audtorch.metrics.functional import pearsonr
 
-from alphagen.config import OPERATORS
+from alphagen.config import *
 from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *

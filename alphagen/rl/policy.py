@@ -107,7 +107,7 @@ class LSTMSharedNet(BaseFeaturesExtractor):
             dropout=dropout,
         )
 
-    def forward(self, obs: Tensor) -> Tensor:
+    def forward(self, obs: Tensor) -> Tensor:d
         bs, seqlen = obs.shape
         beg = torch.full(
             (bs, 1), fill_value=self._n_actions, dtype=torch.long, device=obs.device

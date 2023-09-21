@@ -101,7 +101,7 @@ def main(
         total_timesteps=steps,
         callback=checkpoint_callback,
         tb_log_name=f"{timestamp}_{name_prefix}",
-    )
+   ) 
 
 
 if __name__ == "__main__":

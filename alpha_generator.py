@@ -42,7 +42,7 @@ def task_fetch_path(tag):
         )[-1]
         for name in file_names
     ]
-    return sigs_dir[:1]  # test
+    return sigs_dir # test
 
 
 def task_calc_factors(
@@ -66,14 +66,17 @@ def task_calc_factors(
 
 
 if __name__ == "__main__":
-    config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 320]}
-    num_cores = 10
+    config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
+    config_dict = {"tags":["ret1d"],"horizon":[306]}
+    num_cores = 20
     start_time = 20190103
     end_time = 20211231
 
     for i in range(len(config_dict["tags"])):
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
+        if tag=='satd':
+            continue
         s = time.time()
         sigs_dir = task_fetch_path(tag)
         print(sigs_dir)
