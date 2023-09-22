@@ -7,13 +7,10 @@ from typing import Optional
 
 import numpy as np
 from sb3_contrib.ppo_mask import MaskablePPO
-from stable_baselines3.common.callbacks import BaseCallback
 
 from alphagen.config import *
-from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import *
-from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
-from alphagen.rl.env.core import AlphaEnvCore
+from alphagen.models.alpha_pool import AlphaPool
 from alphagen.rl.env.wrapper import AlphaEnv
 from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
@@ -48,8 +45,8 @@ def main(
         max_backtrack_days=HORIZON_BACK,
     )
     data_valid = ArgData(
-        start_time=20200101,
-        end_time=20201231,
+        start_time=20210101,
+        end_time=20211231,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
     )
@@ -96,7 +93,7 @@ def main(
         policy_kwargs=dict(
             features_extractor_class=LSTMSharedNet,
             features_extractor_kwargs=dict(
-                n_layers=2,
+                n_layers=3,
                 d_model=256,  # init 128
                 dropout=0.1,
                 device=DEVICE_MODEL,
@@ -121,7 +118,7 @@ if __name__ == "__main__":
         seed=random.randint(0, 9999),
         instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
+        steps=100_000,
         # steps=80_000,
-        steps=25_000,
         # steps=250_000,
     )

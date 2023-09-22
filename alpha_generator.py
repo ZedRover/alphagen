@@ -2,10 +2,8 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from glob import glob
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import torch as th
 
 from utils import *
@@ -29,7 +27,8 @@ def json_to_factor(path, start_time, end_time, max_backtrack_days):
     weights = torch.tensor(alpha["weights"])
     factor_value = sum(f * w for f, w in zip(factors, weights))
     factor_value = normalize_by_day(factor_value)
-    return factor_value
+    padding = th.zeros(max_backtrack_days, 6000)
+    return th.concat([padding, factor_value], dim=0)
 
 
 def task_fetch_path(tag):
@@ -42,7 +41,7 @@ def task_fetch_path(tag):
         )[-1]
         for name in file_names
     ]
-    return sigs_dir # test
+    return sigs_dir  # test
 
 
 def task_calc_factors(
@@ -60,14 +59,12 @@ def task_calc_factors(
         )
 
         new_signal = th.stack([i for i in resutls], dim=-1)
-
-        padding = th.zeros(horizon, 6000, new_signal.shape[-1])
-        return th.cat([padding, new_signal], dim=0)
+        return new_signal
 
 
 if __name__ == "__main__":
     config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
-    config_dict = {"tags":["ret1d"],"horizon":[306]}
+    # config_dict = {"tags":["ret1d"],"horizon":[306]}
     num_cores = 20
     start_time = 20190103
     end_time = 20211231
@@ -75,11 +72,9 @@ if __name__ == "__main__":
     for i in range(len(config_dict["tags"])):
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
-        if tag=='satd':
-            continue
         s = time.time()
         sigs_dir = task_fetch_path(tag)
-        print(sigs_dir)
+        print(f"tag:{tag} horizon:{horizon} len_sigs_dir:{len(sigs_dir)}")
         sigs = task_calc_factors(
             sigs_dir, horizon, num_cores, start_time=start_time, end_time=end_time
         )
@@ -87,11 +82,10 @@ if __name__ == "__main__":
             f"alphas/{tag}_h{horizon}_alphas.npy",
             sigs.numpy().astype(np.float32),
         )
-        np.save(
-            f"alphas/{tag}_h{horizon}_dirs.npy",
-            sigs_dir,
-        )
+        with open("alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
+            f.write(f"{sigs_dir}")
         e = time.time()
         print(
             f"num_alphas:{len(sigs_dir)},tag:{tag},horizon:{horizon}),time:{e-s}s,num_cores:{num_cores}"
         )
+        print("-" * 50)

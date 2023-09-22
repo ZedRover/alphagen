@@ -105,8 +105,8 @@ class CustomCallback(BaseCallback):
             weight = state["weights"][i]
             expr_str = str(state["exprs"][i])
             ic_ret = state["ics_ret"][i]
-            print(f"> Alpha #{i}: {weight}, {expr_str}, {ic_ret}")
-        print(f'>> Ensemble ic_ret: {state["best_ic_ret"]}')
+            print(f"> Alpha #{i}: {weight:.5f}, {expr_str}, {ic_ret}")
+        print(f'>> Ensemble ic_ret: {state["best_ic_ret"]:.5f}')
         print("---------------------------------------------")
 
     @property

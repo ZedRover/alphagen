@@ -33,38 +33,20 @@ class ArgData:
         max_backtrack_days: int = 100,
         max_future_days: int = 0,
         features: Optional[List[FeatureType]] = None,
-        stage: str = "train",
         device: torch.device = torch.device("cpu"),
-        shuffle: bool = False,
-        test_size: float = 0.2,
-        seed: int = 42,
     ) -> None:
         self.max_backtrack_days = max_backtrack_days
         self.max_future_days = max_future_days
         self._features = features if features is not None else list(FeatureType)
         self.device = device
-        self.shuffle = shuffle
-        self.test_size = test_size
-        self.seed = seed
-        self.stage = stage
         self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
         self._dates = self._get_data()
 
-    def _get_data(self) -> Tuple[None, np.ndarray, None]:
+    def _get_data(self) -> np.ndarray:
         dates = np.load(DIR_DATES)
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = (np.where(dates == self._end_time)[0][0] + 1) * MULTI_TI
         self.total_len = len(dates)
-        self.train_idxs, self.val_idxs = train_test_split(
-            np.arange(self.start_idx, self.end_idx),
-            test_size=self.test_size,
-            shuffle=self.shuffle,
-            random_state=self.seed,
-        )
-        if self.stage == "train":
-            self.feature_idx = self.train_idxs
-        else:
-            self.feature_idx = self.val_idxs
         return dates
 
     @property
