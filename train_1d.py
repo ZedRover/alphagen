@@ -122,5 +122,6 @@ if __name__ == "__main__":
         instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
         # steps=80_000,
-        steps=250_000,
+        steps=25_000,
+        # steps=250_000,
     )

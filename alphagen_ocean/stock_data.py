@@ -6,6 +6,7 @@ import pandas as pd
 import pandas_market_calendars as mcal
 import SharedArray as sa
 import torch
+from sklearn.model_selection import train_test_split
 
 from alphagen.dir_config import DIR_DATES
 
@@ -32,22 +33,39 @@ class ArgData:
         max_backtrack_days: int = 100,
         max_future_days: int = 0,
         features: Optional[List[FeatureType]] = None,
+        stage: str = "train",
         device: torch.device = torch.device("cpu"),
+        shuffle: bool = False,
+        test_size: float = 0.2,
+        seed: int = 42,
     ) -> None:
-        # self._instrument = np.load("/home/public2/share_yw/data/basic_info/Univ.npy")
         self.max_backtrack_days = max_backtrack_days
         self.max_future_days = max_future_days
         self._features = features if features is not None else list(FeatureType)
         self.device = device
+        self.shuffle = shuffle
+        self.test_size = test_size
+        self.seed = seed
+        self.stage = stage
         self._start_time, self._end_time = fetch_valid_td(start_time, end_time)
-        self.data, self._dates, self._stock_ids = self._get_data()
+        self._dates = self._get_data()
 
     def _get_data(self) -> Tuple[None, np.ndarray, None]:
         dates = np.load(DIR_DATES)
         self.start_idx = np.where(dates == self._start_time)[0][0] * MULTI_TI
         self.end_idx = (np.where(dates == self._end_time)[0][0] + 1) * MULTI_TI
         self.total_len = len(dates)
-        return None, dates, None
+        self.train_idxs, self.val_idxs = train_test_split(
+            np.arange(self.start_idx, self.end_idx),
+            test_size=self.test_size,
+            shuffle=self.shuffle,
+            random_state=self.seed,
+        )
+        if self.stage == "train":
+            self.feature_idx = self.train_idxs
+        else:
+            self.feature_idx = self.val_idxs
+        return dates
 
     @property
     def n_features(self) -> int:
@@ -65,42 +83,3 @@ class ArgData:
             - self.max_backtrack_days
             - self.max_future_days
         )
-
-    def make_dataframe(
-        self,
-        data: Union[torch.Tensor, List[torch.Tensor]],
-        columns: Optional[List[str]] = None,
-    ) -> pd.DataFrame:
-        """
-        Parameters
-        ----------
-        - `data`: a tensor of size `(n_days, n_stocks[, n_columns])`, or
-        a list of tensors of size `(n_days, n_stocks)`
-        - `columns`: an optional list of column names.
-        """
-        if isinstance(data, list):
-            data = torch.stack(data, dim=2)
-        if len(data.shape) == 2:
-            data = data.unsqueeze(2)
-        if columns is None:
-            columns = [str(i) for i in range(data.shape[2])]
-        n_days, n_stocks, n_columns = data.shape
-        if self.n_days != n_days:
-            raise ValueError(
-                f"number of days in the provided tensor ({n_days}) doesn't "
-                f"match that of the current StockData ({self.n_days})"
-            )
-        if self.n_stocks != n_stocks:
-            raise ValueError(
-                f"number of stocks in the provided tensor ({n_stocks}) doesn't "
-                f"match that of the current StockData ({self.n_stocks})"
-            )
-        if len(columns) != n_columns:
-            raise ValueError(
-                f"size of columns ({len(columns)}) doesn't match with "
-                f"tensor feature count ({data.shape[2]})"
-            )
-        date_index = self._dates[self.max_backtrack_days : -self.max_future_days]
-        index = pd.MultiIndex.from_product([date_index, self._stock_ids])
-        data = data.reshape(-1, n_columns)
-        return pd.DataFrame(data.detach().cpu().numpy(), index=index, columns=columns)

@@ -2,7 +2,7 @@ from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.expression_wq import *
 
-MAX_EXPR_LENGTH = 5
+MAX_EXPR_LENGTH = 6
 MAX_EPISODE_LENGTH = 256  # 256
 
 OPERATORS = [
@@ -39,7 +39,20 @@ OPERATORS = [
 ]
 OPERATORS += Operators_oc + Operators_wq
 
-DELTA_TIMES = [5, 8, 16, 20, 32, 40, 60, 70, 80, 90, 99, 128,]
+DELTA_TIMES = [
+    5,
+    8,
+    16,
+    20,
+    32,
+    40,
+    60,
+    70,
+    80,
+    90,
+    99,
+    128,
+]
 # DELTA_TIMES = np.arange(1, 20 * 8, step=32).tolist()
 
 CONSTANTS = [
@@ -61,12 +74,12 @@ CONSTANTS = [
 
 REWARD_PER_STEP = 0.0
 HORIZON_BACK = max(DELTA_TIMES) + 1
-print('='*20)
-print('MAX_EXPR_LENGTH:',MAX_EXPR_LENGTH)
-print('MAX_EPISODE_LENGTH:',MAX_EPISODE_LENGTH)
-print('CONSTANTS:',CONSTANTS)
-print('DELTA_TIMES:',DELTA_TIMES)
-print('HORIZON_BACK:',HORIZON_BACK)
-print('='*20)
+print("=" * 20)
+print("MAX_EXPR_LENGTH:", MAX_EXPR_LENGTH)
+print("MAX_EPISODE_LENGTH:", MAX_EPISODE_LENGTH)
+print("CONSTANTS:", CONSTANTS)
+print("DELTA_TIMES:", DELTA_TIMES)
+print("HORIZON_BACK:", HORIZON_BACK)
+print("=" * 20)
 # 320 for ret1d | checkpoints/20230912180154_ret1d_lexpr09_lopt58_10_4798 -> checkpoints/20230918131205_ret1d_lexpr09_lopt58_10_3315
 # DELTA_TIMES = np.arange(1, 20 * 16, step=16).tolist()
