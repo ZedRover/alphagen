@@ -152,6 +152,7 @@ def batch_topk(yhat, y):
 
 
 def json_to_factor(path):
+    print(path.split("/")[-1])
     data = ArgData(
         start_time=20190103,
         end_time=20211231,

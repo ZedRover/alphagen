@@ -10,25 +10,30 @@ from utils import *
 
 
 def json_to_factor(path, start_time, end_time, max_backtrack_days):
-    data = ArgData(
-        start_time=start_time,
-        end_time=end_time,
-        max_backtrack_days=max_backtrack_days,
-        device=torch.device("cpu"),
-    )
-    with open(path, "r") as f:
-        alpha = json.load(f)
-    factors = [
-        Feature(getattr(FeatureType, expr[1:])).evaluate(data)
-        if expr[0] == "$"
-        else formula_to_expression(expr).evaluate(data)
-        for expr in alpha["exprs"]
-    ]
-    weights = torch.tensor(alpha["weights"])
-    factor_value = sum(f * w for f, w in zip(factors, weights))
-    factor_value = normalize_by_day(factor_value)
-    padding = th.zeros(max_backtrack_days, 6000)
-    return th.concat([padding, factor_value], dim=0)
+    try:
+        data = ArgData(
+            start_time=start_time,
+            end_time=end_time,
+            max_backtrack_days=max_backtrack_days,
+            device=torch.device("cpu"),
+        )
+        with open(path, "r") as f:
+            alpha = json.load(f)
+        factors = [
+            Feature(getattr(FeatureType, expr[1:])).evaluate(data)
+            if expr[0] == "$"
+            else formula_to_expression(expr).evaluate(data)
+            for expr in alpha["exprs"]
+        ]
+        weights = torch.tensor(alpha["weights"])
+        factor_value = sum(f * w for f, w in zip(factors, weights))
+        factor_value = normalize_by_day(factor_value)
+        padding = th.zeros(max_backtrack_days, 6000)
+        print(path.split("/")[-2] + " done")
+        return th.concat([padding, factor_value], dim=0)
+    except Exception as e:
+        print(path.split("/")[-2] + " error" + e)
+        return None
 
 
 def task_fetch_path(tag):
@@ -63,9 +68,9 @@ def task_calc_factors(
 
 
 if __name__ == "__main__":
-    config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
-    # config_dict = {"tags":["ret1d"],"horizon":[306]}
-    num_cores = 20
+    # config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
+    config_dict = {"tags": ["ret1d"], "horizon": [306]}
+    num_cores = 1
     start_time = 20190103
     end_time = 20211231
 
@@ -82,7 +87,7 @@ if __name__ == "__main__":
             f"alphas/{tag}_h{horizon}_alphas.npy",
             sigs.numpy().astype(np.float32),
         )
-        with open("alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
+        with open(f"alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
             f.write(f"{sigs_dir}")
         e = time.time()
         print(

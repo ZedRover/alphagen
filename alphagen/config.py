@@ -2,7 +2,7 @@ from alphagen.data.expression import *
 from alphagen.data.expression_ocean import *
 from alphagen.data.expression_wq import *
 
-MAX_EXPR_LENGTH = 6
+MAX_EXPR_LENGTH = 9
 MAX_EPISODE_LENGTH = 256  # 256
 
 OPERATORS = [
@@ -53,7 +53,7 @@ DELTA_TIMES = [
     99,
     128,
 ]
-# DELTA_TIMES = np.arange(1, 20 * 8, step=32).tolist()
+DELTA_TIMES = np.arange(0, 20 * 8).tolist()
 
 CONSTANTS = [
     -30.0,
