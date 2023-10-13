@@ -70,7 +70,7 @@ def task_calc_factors(
 if __name__ == "__main__":
     # config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
     config_dict = {"tags": ["ret1d"], "horizon": [306]}
-    num_cores = 1
+    num_cores = 15
     start_time = 20190103
     end_time = 20211231
 
