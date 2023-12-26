@@ -375,6 +375,50 @@ class DoubleChecker(object):
         return result_idx
 
 
+from stable_baselines3.common.callbacks import (
+    BaseCallback,
+    EvalCallback,
+    StopTrainingOnRewardThreshold,
+)
+
+
+class EarlyStoppingCallback(BaseCallback):
+    def __init__(self, check_freq, verbose=1):
+        super(EarlyStoppingCallback, self).__init__(verbose)
+        self.check_freq = check_freq
+        self.best_mean_reward = -np.inf
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.check_freq == 0:
+            # 假设 self.model 是你的算法实例，env 是你的评估环境
+            # 这里使用的是 EvalCallback，你需要确保已经创建了评估环境
+            eval_callback = EvalCallback(
+                env,
+                best_model_save_path="./logs/",
+                log_path="./logs/",
+                eval_freq=self.check_freq,
+                deterministic=True,
+                render=False,
+            )
+
+            # 这将执行评估
+            eval_callback(self.model, self._last_obs)
+
+            # 你可以选择使用 EvalCallback 返回的统计信息
+            # 比如平均奖励等，来决定是否早停
+            mean_reward = eval_callback.eval_env.get_attr("returns")[-1]
+            if mean_reward > self.best_mean_reward:
+                self.best_mean_reward = mean_reward
+            else:
+                print("No improvement in mean reward, stopping training")
+                return False  # 返回 False 会停止训练
+
+        return True  # 返回 True 会继续训练
+
+
+# 在训练中使用 EarlyStoppingCallback
+
+
 if __name__ == "__main__":
     formula = "Add($qnet_incr_cash_cash_equ_ttm,Greater(DeStd(Deltaratio(Constant(-0.5),$qbuy_value_exlarge_order_act)),BiasCrsRank($qnet_inflow_rate_value)))"
     expression = formula_to_expression(formula)

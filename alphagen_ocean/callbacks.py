@@ -79,7 +79,7 @@ class CustomCallback(BaseCallback):
         self.logger.record("test/pool_ic", pic_test)
         self._continue = self.earlystop.add(ic_test)
         if not self._continue:
-            print("Early stop!".center(60, "="))
+            print("Early stopping triggered!".center(60, "="))
         else:
             self.show_pool_state()
             self.save_checkpoint()

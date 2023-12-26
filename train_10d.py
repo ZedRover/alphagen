@@ -14,11 +14,10 @@ from alphagen.models.alpha_pool import AlphaPool
 from alphagen.rl.env.wrapper import AlphaEnv
 from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
-from alphagen_ocean.calculator_1d import Calculator1d
+from alphagen_ocean.calculator_10d import Calculator10d
 from alphagen_ocean.callbacks import CustomCallback
 from alphagen_ocean.stock_data import ArgData
 
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 args = ap.ArgumentParser()
 args.add_argument("--gpu", "-g", type=int, default=1)
 args.add_argument("--name", "-n", type=str, default="ret1d")
@@ -61,9 +60,9 @@ def main(
     print("  val days:", data_valid.n_days)
     print(" test days:", data_test.n_days)
 
-    calculator_train = Calculator1d(data_train, device=DEVICE_CALC)
-    calculator_valid = Calculator1d(data_valid, device=DEVICE_CALC)
-    calculator_test = Calculator1d(data_test, device=DEVICE_CALC)
+    calculator_train = Calculator10d(data_train, device=DEVICE_CALC)
+    calculator_valid = Calculator10d(data_valid, device=DEVICE_CALC)
+    calculator_test = Calculator10d(data_test, device=DEVICE_CALC)
 
     pool = AlphaPool(
         capacity=pool_capacity,
@@ -80,7 +79,7 @@ def main(
     checkpoint_callback = CustomCallback(
         save_freq=10000,
         show_freq=10000,
-        save_path="./checkpoints",
+        save_path="./checkpoints_10d/",
         valid_calculator=calculator_valid,
         test_calculator=calculator_test,
         name_prefix=name_prefix,

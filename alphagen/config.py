@@ -53,7 +53,7 @@ DELTA_TIMES = [
     99,
     128,
 ]
-DELTA_TIMES = np.arange(0, 20 * 8).tolist()
+# DELTA_TIMES = np.arange(0, 20 * 8).tolist()
 
 CONSTANTS = [
     -30.0,

@@ -16,3 +16,4 @@ data_collection/data
 *.tar.gz
 wandb
 *.npy
+checkpoints_10d/
