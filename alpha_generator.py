@@ -36,12 +36,12 @@ def json_to_factor(path, start_time, end_time, max_backtrack_days):
         return None
 
 
-def task_fetch_path(tag):
-    file_names = glob(f"checkpoints/*{tag}*")
+def task_fetch_path(tag,ckpt_path='checkpoints'):
+    file_names = glob(f"{ckpt_path}/*{tag}*")
     file_names = [i.split("/")[-1] for i in file_names]
     sigs_dir = [
         sorted(
-            glob(f"checkpoints/{name}/*.json"),
+            glob(f"{ckpt_path}/{name}/*.json"),
             key=lambda x: int(x.split("/")[-1].split("_")[0]),
         )[-1]
         for name in file_names
@@ -69,7 +69,7 @@ def task_calc_factors(
 
 if __name__ == "__main__":
     # config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
-    config_dict = {"tags": ["ret1d"], "horizon": [306]}
+    config_dict = {"tags": ["ret1d"], "horizon": [130]}
     num_cores = 15
     start_time = 20190103
     end_time = 20211231
@@ -78,7 +78,9 @@ if __name__ == "__main__":
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
         s = time.time()
-        sigs_dir = task_fetch_path(tag)
+        sigs_dir = task_fetch_path(tag,ckpt_path='checkpoints_10d')
+        with open(f"alphas/{tag}_h{horizo``n``}_alphas.txt", "w") as f:
+            f.write(f"{sigs_dir}")
         print(f"tag:{tag} horizon:{horizon} len_sigs_dir:{len(sigs_dir)}")
         sigs = task_calc_factors(
             sigs_dir, horizon, num_cores, start_time=start_time, end_time=end_time
@@ -91,6 +93,6 @@ if __name__ == "__main__":
             f.write(f"{sigs_dir}")
         e = time.time()
         print(
-            f"num_alphas:{len(sigs_dir)},tag:{tag},horizon:{horizon}),time:{e-s}s,num_cores:{num_cores}"
+            f"num_alphas:{len(sigs_dir)},tag:{tag},horizon:{horizon},time:{e-s}s,num_cores:{num_cores}"
         )
         print("-" * 50)
