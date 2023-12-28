@@ -36,7 +36,7 @@ def json_to_factor(path, start_time, end_time, max_backtrack_days):
         return None
 
 
-def task_fetch_path(tag,ckpt_path='checkpoints'):
+def task_fetch_path(tag, ckpt_path="checkpoints"):
     file_names = glob(f"{ckpt_path}/*{tag}*")
     file_names = [i.split("/")[-1] for i in file_names]
     sigs_dir = [
@@ -78,8 +78,8 @@ if __name__ == "__main__":
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
         s = time.time()
-        sigs_dir = task_fetch_path(tag,ckpt_path='checkpoints_10d')
-        with open(f"alphas/{tag}_h{horizo``n``}_alphas.txt", "w") as f:
+        sigs_dir = task_fetch_path(tag, ckpt_path="checkpoints_10d")
+        with open(f"alphas/{tag}_h{horizon}_alphas.txt", "w") as f:
             f.write(f"{sigs_dir}")
         print(f"tag:{tag} horizon:{horizon} len_sigs_dir:{len(sigs_dir)}")
         sigs = task_calc_factors(
