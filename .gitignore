@@ -17,3 +17,4 @@ data_collection/data
 wandb
 *.npy
 checkpoints_10d/
+alphas/
