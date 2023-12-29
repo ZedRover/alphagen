@@ -90,7 +90,7 @@ if __name__ == "__main__":
             sigs.numpy().astype(np.float32),
         )
         with open(f"alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
-            f.write(f"{sigs_dir}")
+            f.writelines(sigs_dir)
         e = time.time()
         print(
             f"num_alphas:{len(sigs_dir)},tag:{tag},horizon:{horizon},time:{e-s}s,num_cores:{num_cores}"
