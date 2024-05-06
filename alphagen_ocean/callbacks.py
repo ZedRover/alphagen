@@ -45,6 +45,7 @@ class CustomCallback(BaseCallback):
         self.save_freq = save_freq
         self.show_freq = show_freq
         self.save_path = save_path
+        os.makedirs(self.save_path,exist_ok=True)
         self.name_prefix = name_prefix
 
         self.valid_calculator = valid_calculator
@@ -91,7 +92,9 @@ class CustomCallback(BaseCallback):
             f"{self.timestamp}_{self.name_prefix}",
             f"{self.num_timesteps}_steps",
         )
-        self.model.save(path)  # type: ignore
+        os.makedirs(path, exist_ok=True)
+        
+        # self.model.save(path)  # type: ignore
         if self.verbose > 1:
             print(f"Saving model checkpoint to {path}")
         with open(f"{path}_pool.json", "w") as f:
