@@ -55,4 +55,4 @@ def combine_json_to_txt(checkpoints_dir, output_txt, selected_files_path=None):
 checkpoints_dir = "checkpoints_10d"
 output_txt = "ret10d_90.txt"
 selected_files = "/home/ray/workspace/signal_research/notebook/ret10d_90.txt"  # 可选参数
-combine_json_to_txt(checkpoints_dir, output_txt, selected_files_path=selected_files
+combine_json_to_txt(checkpoints_dir, output_txt, selected_files_path=selected_files)

@@ -5,7 +5,7 @@ from glob import glob
 from typing import List, Union
 
 import pandas as pd
-import ray
+# import ray
 import torch as th
 from audtorch.metrics.functional import pearsonr
 
@@ -18,7 +18,7 @@ from alphagen.utils.correlation import batch_pearsonr
 from alphagen.utils.pytorch_utils import normalize_by_day
 from alphagen_ocean.calculator import QLibStockDataCalculator
 from alphagen_ocean.stock_data import ArgData, FeatureType
-
+from alphagen_ocean.calculator_t0 import Calculator_t0
 
 def tokenize_formula(formula: str) -> List[str]:
     tokens = []
@@ -188,22 +188,22 @@ def calc_factors(data: ArgData, path: str):
     return factor_value
 
 
-@ray.remote
+# @ray.remote
 def remote_json_to_factor(path, start_time, end_time):
     return json_to_factor(path, start_date=start_time, end_date=end_time)
 
 
-@ray.remote
+# @ray.remote
 def remote_batch_pearsonr(tensor1, tensor2):
     return th.nanmean(batch_pearsonr(tensor1, tensor2)).item()
 
 
-@ray.remote
+# @ray.remote
 def remote_calc_factors(data, path):
     return calc_factors(data, path)
 
 
-@ray.remote
+# @ray.remote
 def aud_pearsonr(tensor1, tensor2) -> float:
     return th.nanmean(pearsonr(tensor1, tensor2)).item()
 
@@ -415,20 +415,120 @@ class EarlyStoppingCallback(BaseCallback):
 
         return True  # 返回 True 会继续训练
 
-
-# 在训练中使用 EarlyStoppingCallback
-
+SELECTED_CODES = [
+    "000537",
+    "000627",
+    "000925",
+    "000950",
+    "002058",
+    "002166",
+    "002308",
+    "002399",
+    "002498",
+    "002557",
+    "002577",
+    "002594",
+    "002901",
+    "002941",
+    "002946",
+    "300053",
+    "300137",
+    "300141",
+    "300215",
+    "300225",
+    "300241",
+    "300252",
+    "300366",
+    "300498",
+    "300564",
+    "300605",
+    "300640",
+    "300688",
+    "300713",
+    "300867",
+    "300870",
+    "300908",
+    "300913",
+    "600006",
+    "600012",
+    "600107",
+    "600123",
+    "600127",
+    "600163",
+    "600176",
+    "600218",
+    "600232",
+    "600267",
+    "600302",
+    "600395",
+    "600426",
+    "600428",
+    "600493",
+    "600557",
+    "600578",
+    "600644",
+    "600647",
+    "600665",
+    "600704",
+    "600740",
+    "600797",
+    "600817",
+    "600834",
+    "600859",
+    "600862",
+    "600893",
+    "600984",
+    "601019",
+    "601330",
+    "601881",
+    "603006",
+    "603017",
+    "603018",
+    "603037",
+    "603192",
+    "603212",
+    "603269",
+    "603357",
+    "603368",
+    "603388",
+    "603390",
+    "603559",
+    "603595",
+    "603693",
+    "603712",
+    "603777",
+    "603818",
+    "603856",
+    "603878",
+    "603939",
+    "603990",
+    "605128",
+    "605166",
+    "688057",
+    "688165",
+    "688215",
+    "688286",
+    "688309",
+    "688313",
+    "688366",
+    "688386",
+    "688668",
+    "688678",
+    "688777",
+    "689009",
+]
 
 if __name__ == "__main__":
-    formula = "Add($qnet_incr_cash_cash_equ_ttm,Greater(DeStd(Deltaratio(Constant(-0.5),$qbuy_value_exlarge_order_act)),BiasCrsRank($qnet_inflow_rate_value)))"
+    formula = "$askprice1"
     expression = formula_to_expression(formula)
     print(expression)
-    data_test = ArgData(
-        start_time=20210101,
-        end_time=20211231,
-        device=th.device("cpu"),
-    )
+    calt = Calculator_t0()
+    data_test = calt.data
     s = time.time()
-    expression.evaluate(data_test)
+    result = expression.evaluate(data_test)
+    print(result)
     e = time.time()
     print("Signal calculation time:", e - s)
+
+    
+    

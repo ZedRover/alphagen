@@ -44,6 +44,14 @@ def normalize_by_day(value: Tensor) -> Tensor:
     return value
 
 
+def normalize_timeseries(value: Tensor) -> Tensor:
+    value = value.nan_to_num(0, 0, 0)
+    mean = value.mean(dim=0)
+    std = value.std(dim=0)
+    value.sub_(mean).div_(std)
+    return value
+
+
 # def masked_mean_std(
 #     x: Tensor, n: Optional[Tensor] = None, mask: Optional[Tensor] = None
 # ) -> Tuple[Tensor, Tensor]:

@@ -29,7 +29,7 @@ OPERATORS = [
     Min,
     Med,
     Mad,
-    Rank,
+    # Rank,
     # Delta,
     WMA,
     EMA,
@@ -37,7 +37,7 @@ OPERATORS = [
     Cov,
     Corr,
 ]
-OPERATORS += Operators_oc + Operators_wq
+# OPERATORS += Operators_oc + Operators_wq
 
 DELTA_TIMES = [
     5,
@@ -53,7 +53,7 @@ DELTA_TIMES = [
     99,
     128,
 ]
-# DELTA_TIMES = np.arange(0, 20 * 8).tolist()
+DELTA_TIMES = np.arange(1, 500, 10).tolist()
 
 CONSTANTS = [
     -30.0,
@@ -71,9 +71,10 @@ CONSTANTS = [
     10.0,
     30.0,
 ]
+CONSTANTS = np.arange(-500, 500, step=10).tolist()
 
 REWARD_PER_STEP = 0.0
-HORIZON_BACK = max(DELTA_TIMES) + 1
+HORIZON_BACK = 4000
 print("=" * 20)
 print("MAX_EXPR_LENGTH:", MAX_EXPR_LENGTH)
 print("MAX_EPISODE_LENGTH:", MAX_EPISODE_LENGTH)

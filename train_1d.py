@@ -40,20 +40,20 @@ def main(
     reseed_everything(seed)
 
     data_train = ArgData(
-        start_time=20190103,
-        end_time=20201231,
+        start_time=20210101,
+        end_time=20211231,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
     )
     data_valid = ArgData(
-        start_time=20210101,
-        end_time=20211231,
+        start_time=20220101,
+        end_time=20220331,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
     )
     data_test = ArgData(
-        start_time=20210101,
-        end_time=20211231,
+        start_time=20220331,
+        end_time=20221231,
         device=DEVICE_DATA,
         max_backtrack_days=HORIZON_BACK,
     )

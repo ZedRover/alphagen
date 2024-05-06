@@ -70,7 +70,11 @@ class AlphaEnvCore(gym.Env):
         if self._print_expr:
             print("evaluating: ", expr)
         try:
+            import time 
+            s = time.time()
             ret = self.pool.try_new_expr(expr)
+            e = time.time()
+            print(f"Used time: {e-s:.1f}s")
             self.eval_cnt += 1
             return ret
         except OutOfDataRangeError:

@@ -1,7 +1,7 @@
 import time
 from concurrent.futures import ProcessPoolExecutor
 from glob import glob
-
+from alphagen_ocean.calculator_t0 import Calculator_t0
 import numpy as np
 import pandas as pd
 import torch as th
@@ -11,29 +11,39 @@ from utils import *
 
 def json_to_factor(path, start_time, end_time, max_backtrack_days):
     try:
-        data = ArgData(
-            start_time=start_time,
-            end_time=end_time,
-            max_backtrack_days=max_backtrack_days,
+        calculator = Calculator_t0(
+            codes=SELECTED_CODES,
+            start=start_time,
+            end=end_time,
+            max_backtrack_ticks=max_backtrack_days,
+            max_future_ticks=0,
             device=torch.device("cpu"),
         )
+        data_dict = calculator.dat_dict
         with open(path, "r") as f:
             alpha = json.load(f)
-        factors = [
-            Feature(getattr(FeatureType, expr[1:])).evaluate(data)
-            if expr[0] == "$"
-            else formula_to_expression(expr).evaluate(data)
-            for expr in alpha["exprs"]
-        ]
-        weights = torch.tensor(alpha["weights"])
-        factor_value = sum(f * w for f, w in zip(factors, weights))
-        factor_value = normalize_by_day(factor_value)
-        padding = th.zeros(max_backtrack_days, 6000)
-        print(path.split("/")[-2] + " done")
-        return th.concat([padding, factor_value], dim=0)
+        # TODO
+        ret = []
+        for code in data_dict:
+            data = data_dict[code]
+            factors = [
+                (
+                    Feature(getattr(FeatureType, expr[1:])).evaluate(data)
+                    if expr[0] == "$"
+                    else formula_to_expression(expr).evaluate(data)
+                )
+                for expr in alpha["exprs"]
+            ]
+            weights = torch.tensor(alpha["weights"])
+            factor_value = sum(f * w for f, w in zip(factors, weights))
+            factor_value = normalize_by_day(factor_value)
+            padding = th.zeros(max_backtrack_days, 1)
+            print(path.split("/")[-2] + " done")
+            ret.append(th.concat([padding, factor_value], dim=0))
     except Exception as e:
         print(path.split("/")[-2] + " error" + e)
-        return None
+
+    return ret
 
 
 def task_fetch_path(tag, ckpt_path="checkpoints"):
@@ -46,7 +56,7 @@ def task_fetch_path(tag, ckpt_path="checkpoints"):
         )[-1]
         for name in file_names
     ]
-    return sigs_dir  # test
+    return sigs_dir
 
 
 def task_calc_factors(
@@ -62,35 +72,50 @@ def task_calc_factors(
                 [horizon] * len(sigs_dir),
             )
         )
+        signals_dict = {}
+        for i in range(len(SELECTED_CODES)):
+            code = SELECTED_CODES
+            signals_dict[code] = th.stack(
+                [j[i].reshape(-1, 1) for j in resutls], dim=-1
+            )
 
-        new_signal = th.stack([i for i in resutls], dim=-1)
-        return new_signal
+        return signals_dict
 
 
 if __name__ == "__main__":
     # config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
-    config_dict = {"tags": ["ret1d"], "horizon": [130]}
-    num_cores = 15
-    start_time = 20190103
-    end_time = 20211231
+    config_dict = {"tags": ["ret1d"], "horizon": [4000]}
+    num_cores = 2
+    start_time = 20210101
+    end_time = 20221231
 
     for i in range(len(config_dict["tags"])):
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
         s = time.time()
-        sigs_dir = task_fetch_path(tag, ckpt_path="checkpoints_10d")
-        with open(f"alphas/{tag}_h{horizon}_alphas.txt", "w") as f:
-            f.write(f"{sigs_dir}")
+        sigs_dir = task_fetch_path(tag, ckpt_path="t0_results")
+        # with open(f"alphas/{tag}_h{horizon}_alphas.txt", "w") as f:
+        #     f.write(f"{sigs_dir}")
         print(f"tag:{tag} horizon:{horizon} len_sigs_dir:{len(sigs_dir)}")
         sigs = task_calc_factors(
             sigs_dir, horizon, num_cores, start_time=start_time, end_time=end_time
         )
-        np.save(
-            f"alphas/{tag}_h{horizon}_alphas.npy",
-            sigs.numpy().astype(np.float32),
-        )
-        with open(f"alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
-            f.writelines(sigs_dir)
+        for code in SELECTED_CODES:
+            sig_now = sigs[code]
+            np.savetxt(
+                f"t0/stkCode_{code}.csv",
+                sig_now.numpy().astype(np.float32),
+                delimiter=",",
+                comments="",
+                fmt="%f",
+            )
+
+        # np.save(
+        #     f"t0/{tag}_h{horizon}_alphas.npy",
+        #     sigs.numpy().astype(np.float32),
+        # )
+        # with open(f"alphas/{tag}_h{horizon}_alphas.txt", "a") as f:
+        #     f.writelines(sigs_dir)
         e = time.time()
         print(
             f"num_alphas:{len(sigs_dir)},tag:{tag},horizon:{horizon},time:{e-s}s,num_cores:{num_cores}"

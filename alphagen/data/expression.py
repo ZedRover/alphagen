@@ -1,11 +1,17 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Type, Union
 
-import SharedArray as sa
+# import SharedArray as sa
 import torch
 from torch import Tensor
 
-from alphagen_ocean.stock_data import N_PROD, ArgData, FeatureType
+from alphagen_ocean.stock_data import (
+    N_PROD,
+    ArgData,
+    FeatureType,
+    FakeData,
+    get_feature,
+)
 
 
 def roll_with_nan(tensor: torch.Tensor, shifts: int, dims: int = 0) -> torch.Tensor:
@@ -29,8 +35,7 @@ class OutOfDataRangeError(IndexError):
 
 class Expression(metaclass=ABCMeta):
     @abstractmethod
-    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
-        ...
+    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor: ...
 
     def __repr__(self) -> str:
         return str(self)
@@ -98,7 +103,7 @@ class Feature(Expression):
     def __init__(self, feature: FeatureType) -> None:
         self._feature = feature
 
-    def evaluate(self, data: ArgData, period: slice = slice(0, 1)) -> Tensor:
+    def evaluate(self, data: ArgData | FakeData, period: slice = slice(0, 1)) -> Tensor:
         assert period.step == 1 or period.step is None
         if (
             period.start < -data.max_backtrack_days
@@ -108,13 +113,8 @@ class Feature(Expression):
         start = period.start + data.max_backtrack_days
         stop = period.stop + data.max_backtrack_days + data.n_days - 1
         # stop = -1
-        # n_feat = int(self._feature.value)
-        # return torch.from_numpy(data.data[start:stop, n_feat, :])
-        return torch.from_numpy(
-            sa.attach(self._feature.name).reshape(-1, N_PROD)[
-                data.start_idx : data.end_idx
-            ][start:stop]
-        )  # NOTE: load feature
+        n_feat = int(self._feature.value)
+        return data.data[start:stop, n_feat].reshape(-1, 1)
 
     def __str__(self) -> str:
         return "$" + self._feature.name.lower()
@@ -135,8 +135,6 @@ class Constant(Expression):
             or period.stop - 1 > data.max_future_days
         ):
             raise OutOfDataRangeError()
-        # device = data.data.device
-        # dtype = data.data.dtype
         device = data.device
         dtype = torch.float32
         days = period.stop - period.start - 1 + data.n_days
@@ -178,13 +176,11 @@ class DeltaTime(Expression):
 class Operator(Expression):
     @classmethod
     @abstractmethod
-    def n_args(cls) -> int:
-        ...
+    def n_args(cls) -> int: ...
 
     @classmethod
     @abstractmethod
-    def category_type(cls) -> Type["Operator"]:
-        ...
+    def category_type(cls) -> Type["Operator"]: ...
 
 
 class UnaryOperator(Operator):
@@ -205,8 +201,7 @@ class UnaryOperator(Operator):
         return self._apply(self._operand.evaluate(data, period))
 
     @abstractmethod
-    def _apply(self, operand: Tensor) -> Tensor:
-        ...
+    def _apply(self, operand: Tensor) -> Tensor: ...
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self._operand})"
@@ -237,8 +232,7 @@ class BinaryOperator(Operator):
         )
 
     @abstractmethod
-    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
-        ...
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor: ...
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self._lhs},{self._rhs})"
@@ -278,8 +272,7 @@ class RollingOperator(Operator):
         return self._apply(values)  # (L, S)
 
     @abstractmethod
-    def _apply(self, operand: Tensor) -> Tensor:
-        ...
+    def _apply(self, operand: Tensor) -> Tensor: ...
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self._operand},{self._delta_time})"
@@ -324,8 +317,7 @@ class PairRollingOperator(Operator):
         return self._apply(lhs, rhs)  # (L, S)
 
     @abstractmethod
-    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor:
-        ...
+    def _apply(self, lhs: Tensor, rhs: Tensor) -> Tensor: ...
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self._lhs},{self._rhs},{self._delta_time})"
@@ -603,7 +595,7 @@ Operators: List[Type[Expression]] = [
     Min,
     Med,
     Mad,
-    Rank,
+    # Rank,
     Delta,
     WMA,
     EMA,

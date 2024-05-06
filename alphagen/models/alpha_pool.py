@@ -23,16 +23,13 @@ class AlphaPoolBase(metaclass=ABCMeta):
         self.device = device
 
     @abstractmethod
-    def to_dict(self) -> dict:
-        ...
+    def to_dict(self) -> dict: ...
 
     @abstractmethod
-    def try_new_expr(self, expr: Expression) -> float:
-        ...
+    def try_new_expr(self, expr: Expression) -> float: ...
 
     @abstractmethod
-    def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]:
-        ...
+    def test_ensemble(self, calculator: AlphaCalculator) -> Tuple[float, float]: ...
 
 
 class AlphaPool(AlphaPoolBase):
@@ -164,10 +161,11 @@ class AlphaPool(AlphaPoolBase):
         ic = calculator.calc_pool_IC_ret(
             self.exprs[: self.size], self.weights[: self.size]
         )
-        pool_ic = calculator.calc_pool_pIC_ret(
-            self.exprs[: self.size], self.weights[: self.size]
-        )
-        return ic, pool_ic
+        # pool_ic = calculator.calc_pool_pIC_ret(
+        #     self.exprs[: self.size], self.weights[: self.size]
+        # )
+        # return ic, pool_ic
+        return ic, ic
 
     def evaluate_ensemble(self) -> float:
         if self.size == 0:
