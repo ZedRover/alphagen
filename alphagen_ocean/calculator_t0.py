@@ -27,6 +27,7 @@ def timer_func(func):
 
     return wrap_func
 
+
 def filter_data(
     label, timestamp, start, end, max_backtrack_ticks, max_future_ticks, device
 ):
@@ -78,7 +79,7 @@ class Calculator_t0(AlphaCalculator):
             for code in codes
         }
 
-    @timer_func
+    # @timer_func
     @lru_cache()
     def _calc_alpha(self, expr: Expression) -> Tensor:
         alpha_dict = {
@@ -86,17 +87,19 @@ class Calculator_t0(AlphaCalculator):
             for code in self.codes
         }
         return alpha_dict
-    @timer_func
+
+    # @timer_func
     @lru_cache(maxsize=50)
     def _calc_IC(self, value1: Tensor, value2: Tensor) -> float:
         ic = batch_pearsonr(value1.T, value2.T).item()
         return ic
-    
-    @timer_func
+
+    # @timer_func
     @lru_cache(maxsize=50)
     def _calc_rIC(self, value1: Tensor, value2: Tensor) -> float:
         return batch_spearmanr(value1.T, value2.T).item()
-    @timer_func
+
+    # @timer_func
     def _make_ensemble_alpha(
         self, exprs: List[Expression], weights: List[float]
     ) -> Tensor:
@@ -113,8 +116,8 @@ class Calculator_t0(AlphaCalculator):
                 sum([alpha_dicts[i][code] for i in range(n)])
             )
         return factor_dict
-    
-    @timer_func
+
+    # @timer_func
     @lru_cache(maxsize=50)
     def calc_single_IC_ret(self, expr: Expression) -> float:
         alpha_dict = self._calc_alpha(expr)
@@ -124,7 +127,8 @@ class Calculator_t0(AlphaCalculator):
         }
         mean_ic = np.mean(list(ic_dict.values()))
         return mean_ic
-    @timer_func
+
+    # @timer_func
     @lru_cache(maxsize=50)
     def calc_mutual_IC(self, expr1: Expression, expr2: Expression) -> float:
 
@@ -133,7 +137,8 @@ class Calculator_t0(AlphaCalculator):
             self._calc_IC(alpha_dict1[code], alpha_dict2[code]) for code in self.codes
         ]
         return np.mean(ics)
-    @timer_func
+
+    # @timer_func
     def calc_pool_IC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         with torch.no_grad():
             factors = self._make_ensemble_alpha(exprs, weights)
@@ -143,11 +148,13 @@ class Calculator_t0(AlphaCalculator):
                     batch_pearsonr(factors[code].T, self.ret_dict[code].T).mean().item()
                 )
             return ic / len(factors)
-    @timer_func
+
+    # @timer_func
     def calc_pool_rIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         "First combine the alphas linearly,"
         "then Calculate Rank IC between the linear combination and a predefined target."
         return None
-    @timer_func
+
+    # @timer_func
     def calc_pool_pIC_ret(self, exprs: List[Expression], weights: List[float]) -> float:
         return None

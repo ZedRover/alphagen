@@ -115,7 +115,20 @@ class FakeData:
         #     ret = f["tickData"][:]
         ret = sa.attach(f"snapshot_{code}")
         ret = ret[self.start_idx : self.end_idx, :]
-        return torch.from_numpy(ret).nan_to_num(0, 0, 0).to(self.device)
+        # TODO normalize columns of ret
+        ret_tensor = torch.from_numpy(ret).float().nan_to_num(0, 0, 0).to(self.device)
+        # scale each column to -1 - 1
+        normalized_ret_tensor = (
+            2
+            * (ret_tensor - ret_tensor.min(0, keepdim=True).values)
+            / (
+                ret_tensor.max(0, keepdim=True).values
+                - ret_tensor.min(0, keepdim=True).values
+            )
+            - 1
+        )
+
+        return normalized_ret_tensor
 
     @property
     def n_features(self) -> int:

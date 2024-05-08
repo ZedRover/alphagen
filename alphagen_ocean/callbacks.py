@@ -9,6 +9,7 @@ from alphagen.data.calculator import AlphaCalculator
 from alphagen.data.expression import *
 from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
 from alphagen.rl.env.core import AlphaEnvCore
+from warnings import warn
 
 
 class FixedSizeContainer:
@@ -23,6 +24,8 @@ class FixedSizeContainer:
 
     def check_order(self):
         for i in range(1, self.size):
+            if np.isnan(self.container[i - 1]):
+                raise warn("Early stopping container contains NaN!")
             if self.container[i] >= self.container[i - 1]:
                 return True
         return False
@@ -45,7 +48,7 @@ class CustomCallback(BaseCallback):
         self.save_freq = save_freq
         self.show_freq = show_freq
         self.save_path = save_path
-        os.makedirs(self.save_path,exist_ok=True)
+        os.makedirs(self.save_path, exist_ok=True)
         self.name_prefix = name_prefix
 
         self.valid_calculator = valid_calculator
@@ -93,7 +96,7 @@ class CustomCallback(BaseCallback):
             f"{self.num_timesteps}_steps",
         )
         os.makedirs(path, exist_ok=True)
-        
+
         # self.model.save(path)  # type: ignore
         if self.verbose > 1:
             print(f"Saving model checkpoint to {path}")
