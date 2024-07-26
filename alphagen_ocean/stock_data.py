@@ -19,7 +19,6 @@ MULTI_TI = 16
 
 FeatureType = Enum("FeatureType", {feature: i for i, feature in enumerate(FEATURES)})
 
-
 # def fetch_valid_td(start, end):
 #     cld = mcal.get_calendar("XSHG")
 #     early = cld.schedule(start_date=str(start), end_date=str(end))
@@ -91,44 +90,45 @@ class FakeData:
         code="000537",
         start_time=20190103,
         end_time=20190605,
-        timestamp=[],
         max_backtrack_days=100,
         max_future_days=0,
-        features=None,
         device=torch.device("cpu"),
+        **kwargs,
     ):
         self.code = code
         self.device = device
-        self.dates = timestamp
+
         self.max_backtrack_days = max_backtrack_days
         self.max_future_days = max_future_days
+        self.dates = self.load_timestamp_data(code)
 
         # Find indices
         self.start_idx, self.end_idx = find_date_indices(
             self.dates, start_time, end_time
         )
         # Load feature data within the date range
-        self.data = self.load_feature_data(self.code)
+        self._data = self.load_feature_data(self.code)
+        self.label = self.load_label_data(code)
+
+    @property
+    def data(self):
+        # Transfer the data to the specified device temporarily
+        return self._data
+
+    def load_timestamp_data(self, code):
+        ret = sa.attach(f"timestamp_{code}", ro=True)
+        return ret
 
     def load_feature_data(self, code):
-        # with h5py.File(f"/mnt/disk1/data_hub/stkCode_{code}.h5", "r") as f:
-        #     ret = f["tickData"][:]
-        ret = sa.attach(f"snapshot_{code}")
+        ret = np.load(f"/mnt/disk1/snapshot_diff_norm_n20/{code}.npy")
         ret = ret[self.start_idx : self.end_idx, :]
-        # TODO normalize columns of ret
-        ret_tensor = torch.from_numpy(ret).float().nan_to_num(0, 0, 0).to(self.device)
-        # scale each column to -1 - 1
-        normalized_ret_tensor = (
-            2
-            * (ret_tensor - ret_tensor.min(0, keepdim=True).values)
-            / (
-                ret_tensor.max(0, keepdim=True).values
-                - ret_tensor.min(0, keepdim=True).values
-            )
-            - 1
-        )
+        ret_tensor = torch.from_numpy(ret).float().nan_to_num(0, 0, 0)
+        return ret_tensor
 
-        return normalized_ret_tensor
+    def load_label_data(self, code):
+        ret = sa.attach(f"label_{code}", ro=True)
+        ret = ret[self.start_idx + self.max_backtrack_days : self.end_idx]
+        return torch.from_numpy(ret).float()
 
     @property
     def n_features(self) -> int:

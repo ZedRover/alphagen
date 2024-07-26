@@ -14,21 +14,19 @@ from alphagen.models.alpha_pool import AlphaPool
 from alphagen.rl.env.wrapper import AlphaEnv
 from alphagen.rl.policy import LSTMSharedNet
 from alphagen.utils.random import reseed_everything
-from alphagen_ocean.calculator_t0 import Calculator_t0
+from alphagen_ocean.calculator_t0 import CalculatorSignal
 from alphagen_ocean.callbacks import CustomCallback
-from alphagen_ocean.stock_data import ArgData
 from utils import SELECTED_CODES
 
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 args = ap.ArgumentParser()
-args.add_argument("--gpu", "-g", type=int, default=0)
+args.add_argument("--gpu", "-g", type=int, default=1)
 args.add_argument("--name", "-n", type=str, default="ret1d")
 args.add_argument("--kwargs", "-k", type=str, default="None")
 args = args.parse_args()
 
 
 DEVICE_MODEL = torch.device(f"cuda:{args.gpu}")
-# DEVICE_CALC = torch.device(f"cuda:{args.gpu}")
 # DEVICE_CALC = torch.device(f"cuda:{args.gpu}")
 DEVICE_CALC = torch.device("cpu")
 
@@ -40,7 +38,7 @@ def main(
     steps: int = 200_000,
 ):
     reseed_everything(seed)
-    calculator_train = Calculator_t0(
+    calculator_train = CalculatorSignal(
         codes=SELECTED_CODES,
         start=20210101,
         end=20211231,
@@ -48,7 +46,7 @@ def main(
         max_future_ticks=0,
         device=DEVICE_CALC,
     )
-    calculator_valid = Calculator_t0(
+    calculator_valid = CalculatorSignal(
         codes=SELECTED_CODES,
         start=20220101,
         end=20220331,
@@ -56,7 +54,7 @@ def main(
         max_future_ticks=0,
         device=DEVICE_CALC,
     )
-    calculator_test = Calculator_t0(
+    calculator_test = CalculatorSignal(
         codes=SELECTED_CODES,
         start=20220331,
         end=20221231,
@@ -86,7 +84,6 @@ def main(
         name_prefix=name_prefix,
         timestamp=timestamp,
         verbose=1,
-        release_path="./data/May23",
     )
 
     model = MaskablePPO(
@@ -95,15 +92,14 @@ def main(
         policy_kwargs=dict(
             features_extractor_class=LSTMSharedNet,
             features_extractor_kwargs=dict(
-                n_layers=2,
-                d_model=512,  # init 128
+                n_layers=3,
+                d_model=128,  # init 128
                 dropout=0.1,
                 device=DEVICE_MODEL,
             ),
         ),
-        # gamma=1.0,
-        gamma=0.99,
-        ent_coef=1e-2,  # NOTE 1e-2
+        gamma=1.0,
+        ent_coef=0.1,  # NOTE 1e-2
         batch_size=512,  # 512
         tensorboard_log="./log",
         device=DEVICE_MODEL,
@@ -121,7 +117,7 @@ if __name__ == "__main__":
         seed=random.randint(0, 9999),
         instruments=f"{args.name}_lexpr{str(MAX_EXPR_LENGTH).zfill(2)}_lopt{len(OPERATORS)}",
         pool_capacity=10,
-        # steps=100_000,
-        steps=80_000,
+        steps=100_000,
+        # steps=80_000,
         # steps=250_000,
     )

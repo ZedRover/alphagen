@@ -15,7 +15,7 @@ from alphagen.data.expression_ocean import *
 from alphagen.data.tokens import *
 from alphagen.data.tree import ExpressionBuilder
 from alphagen.utils.correlation import batch_pearsonr
-from alphagen.utils.pytorch_utils import normalize_by_day
+from alphagen.utils.pytorch_utils import normalize_by_day,normalize_timeseries
 from alphagen_ocean.calculator import QLibStockDataCalculator
 from alphagen_ocean.stock_data import ArgData, FeatureType
 from alphagen_ocean.calculator_t0 import Calculator_t0

@@ -14,15 +14,16 @@ from utils import *
 # df_result = pd.read_csv("./result.csv", index_col=0)
 # sigs_name = df_result.index.tolist()
 HORIZON_BACK = 100
-sigs_name = glob("checkpoints/*satd*")
-sigs_name = [i.split("/")[-1] for i in sigs_name]
-sigs_dir = [
-    sorted(
-        glob(f"checkpoints/{name}/*.json"),
-        key=lambda x: int(x.split("/")[-1].split("_")[0]),
-    )[-1]
-    for name in sigs_name
-]
+# sigs_name = glob("checkpoints/*satd*")
+# sigs_name = [i.split("/")[-1] for i in sigs_name]
+# sigs_dir = [
+#     sorted(
+#         glob(f"checkpoints/{name}/*.json"),
+#         key=lambda x: int(x.split("/")[-1].split("_")[0]),
+#     )[-1]
+#     for name in sigs_name
+# ]
+sigs_dir = sorted(glob("release_json/*.json"))
 sigs_dict = {}
 s = time.time()
 with ProcessPoolExecutor(20) as executor:

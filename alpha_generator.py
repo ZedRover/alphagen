@@ -84,7 +84,7 @@ def task_calc_factors(
 
 if __name__ == "__main__":
     # config_dict = {"tags": ["satd", "ret1d"], "horizon": [100, 306]}
-    config_dict = {"tags": ["ret1d"], "horizon": [4000]}
+    config_dict = {"tags": ["_"], "horizon": [200]}
     num_cores = 2
     start_time = 20210101
     end_time = 20221231
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         tag = config_dict["tags"][i]
         horizon = config_dict["horizon"][i]
         s = time.time()
-        sigs_dir = task_fetch_path(tag, ckpt_path="t0_results")
+        sigs_dir = task_fetch_path(tag, ckpt_path="release_json")
         # with open(f"alphas/{tag}_h{horizon}_alphas.txt", "w") as f:
         #     f.write(f"{sigs_dir}")
         print(f"tag:{tag} horizon:{horizon} len_sigs_dir:{len(sigs_dir)}")

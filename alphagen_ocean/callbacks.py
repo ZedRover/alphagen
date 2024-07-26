@@ -10,6 +10,7 @@ from alphagen.data.expression import *
 from alphagen.models.alpha_pool import AlphaPool, AlphaPoolBase
 from alphagen.rl.env.core import AlphaEnvCore
 from warnings import warn
+from glob import glob
 
 
 class FixedSizeContainer:
@@ -43,6 +44,7 @@ class CustomCallback(BaseCallback):
         timestamp: Optional[str] = None,
         verbose: int = 0,
         patience: int = 5,
+        release_path: str = "./release_json",
     ):
         super().__init__(verbose)
         self.save_freq = save_freq
@@ -56,7 +58,7 @@ class CustomCallback(BaseCallback):
 
         self.earlystop = FixedSizeContainer(size=patience)
         self._continue = True
-
+        self.release_path = release_path
         if timestamp is None:
             self.timestamp = datetime.now().strftime("%Y%m%d%H%M")
         else:
@@ -78,15 +80,27 @@ class CustomCallback(BaseCallback):
         )
         self.logger.record("pool/best_ic_ret", self.pool.best_ic_ret)
         self.logger.record("pool/eval_cnt", self.pool.eval_cnt)
-        ic_test, pic_test = self.pool.test_ensemble(self.valid_calculator)
+        ic_val, pic_val = self.pool.test_ensemble(self.valid_calculator)
+        self.logger.record("valid/ic", ic_val)
+        self.logger.record("valid/pool_ic", pic_val)
+        ic_test, pic_test = self.pool.test_ensemble(self.test_calculator)
         self.logger.record("test/ic", ic_test)
         self.logger.record("test/pool_ic", pic_test)
+        if ic_val > 0.02 and ic_test > 0.02:
+            path = os.path.join(
+                self.release_path,
+            )
+            n = len(glob(f"{path}/*.json"))
+            with open(f"{path}/n{n}_{ic_val:.2f}_{ic_test:.2f}.json", "w") as f:
+                json.dump(self.pool.to_dict(), f)
+
         self._continue = self.earlystop.add(ic_test)
-        if not self._continue:
+        if not self._continue or np.isnan(ic_test):
             print("Early stopping triggered!".center(60, "="))
         else:
             self.show_pool_state()
             self.save_checkpoint()
+
         print(f"{self.timestamp}".center(60, "="))
 
     def save_checkpoint(self):
@@ -122,3 +136,4 @@ class CustomCallback(BaseCallback):
     @property
     def env_core(self) -> AlphaEnvCore:
         return self.training_env.envs[0].unwrapped  # type: ignore
+
